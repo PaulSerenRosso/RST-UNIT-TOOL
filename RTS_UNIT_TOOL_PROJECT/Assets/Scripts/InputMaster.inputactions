@@ -1,0 +1,60 @@
+{
+    "name": "InputMaster",
+    "maps": [
+        {
+            "name": "Player",
+            "id": "36a1827b-d6bc-4463-a5eb-8bc8530a7293",
+            "actions": [
+                {
+                    "name": "Select",
+                    "type": "Button",
+                    "id": "21d71c27-1730-4722-9b0c-005b00bf9bf5",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Deselect",
+                    "type": "Button",
+                    "id": "68b802df-65b2-4da4-8c65-ad466f9e6460",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "66159d8b-b429-47f4-a696-6c29a068eca0",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Select",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2a3c31ea-6cf8-4540-81b7-0f8d8e7dd500",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Deselect",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "Camera",
+            "id": "ee5c10cf-1790-4701-a12d-99073f1c294d",
+            "actions": [],
+            "bindings": []
+        }
+    ],
+    "controlSchemes": []
+}
