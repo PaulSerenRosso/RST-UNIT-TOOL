@@ -1,12 +1,9 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 public class SquadManager : MonoBehaviour
 {
@@ -14,21 +11,8 @@ public class SquadManager : MonoBehaviour
     public List<Squad> AllSquads;
     public List<string> AllTypesUnit;
     private List<UnitScript> _allUnits;
-
     
-   // check les cubes dans une certaines distances
-   
-   // checks check un certain attribut sur l'unité 
-   
-   // check la distance pure 
-   
-   // trier pour avoir le plus proche 
-   
-   // add deux vectors pour la distance calcule des coéfficient et boudories
-   
-   // transform pour qu'il soit bien clean
-   
-   //take damage
+    
 
 
    

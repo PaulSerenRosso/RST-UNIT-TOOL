@@ -26,7 +26,8 @@ public class SquadEditor : Editor
             
             // lock la position des 
             _squad.AllUnits.Clear();
-            _squad.transform.position = new Vector3(_squad.transform.position.x, _squad.transform.position.y, _squad.transform.position.x)
+            _squad.transform.position = new Vector3(_squad.transform.position.x, _squad.transform.position.y,
+                _squad.transform.position.x);
             for (int i = 0; i < _squad.SpawnerUnits.Count; i++)
             {
                 for (int j = 0; j <_squad.SpawnerUnits[i].Count ; j++)
