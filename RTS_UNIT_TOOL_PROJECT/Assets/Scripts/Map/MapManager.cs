@@ -4,24 +4,38 @@ using UnityEngine;
 public class MapManager : MonoBehaviour
 {
     [SerializeField]
-    private List<TerrainY> allTerrainY;
+   public List<TerrainY> AllTerrains;
 
+   public TerrainData BaseData;
 
+   
+       public static MapManager Instance { get; private set; }
+ 
+       void Awake()
+       {
+           if (Instance != null && Instance != this)
+               Destroy(gameObject);    // Suppression d'une instance précédente (sécurité...sécurité...)
+ 
+           Instance = this;
+       }
+
+       
+   
     private void OnValidate()
     {
-        for (int i = 0; i < allTerrainY.Count; i++)
+        for (int i = 0; i < AllTerrains.Count; i++)
         {
-            Vector3 pos = new Vector3(allTerrainY[i].Terrain.position.x,allTerrainY[i].YPosition ,allTerrainY[i].Terrain.position.z) ;
-            allTerrainY[i].Terrain.position = pos;
+            Vector3 pos = new Vector3(AllTerrains[i].Terrain.transform.position.x,AllTerrains[i].YPosition ,AllTerrains[i].Terrain.transform.position.z) ;
+            AllTerrains[i].Terrain.transform.position = pos;
         }
     }
 
     private void OnDrawGizmos()
     {
-        for (int i = 0; i < allTerrainY.Count; i++)
+        for (int i = 0; i < AllTerrains.Count; i++)
                 {
                     Gizmos.color = Color.blue;
-                    Gizmos.DrawSphere(allTerrainY[i].Terrain.position, 3f);
+                    Gizmos.DrawSphere(AllTerrains[i].Terrain.transform.position, 3f);
                 }
     }
 }

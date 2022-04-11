@@ -11,8 +11,16 @@ public class SquadManager : MonoBehaviour
     [SerializeField] private GridManager _gridManager;
     public List<Squad> AllSquads;
     public List<string> AllTypesUnit;
-    private List<UnitScript> _allUnits;
-    
+    private List<UnitScript> _allUnits = new List<UnitScript>();
+    public static SquadManager Instance { get; private set; }
+ 
+    void Awake()
+    {
+        if (Instance != null && Instance != this)
+            Destroy(gameObject);    // Suppression d'une instance précédente (sécurité...sécurité...)
+ 
+        Instance = this;
+    }
    void Start()
    {
        for (int i = 0; i < AllSquads.Count; i++)
@@ -24,9 +32,6 @@ public class SquadManager : MonoBehaviour
 
     private void OnValidate()
     {
-        if (EditorApplication.isPlayingOrWillChangePlaymode && EditorApplication.isCompiling)
-       return;
-     
         _allUnits.Clear();
         for (int i = 0; i <AllSquads.Count ; i++)
         {

@@ -15,7 +15,7 @@ public class SquadManagerEditor : Editor
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
-        if(GUILayout.Button("Save Player Type"))
+        if(GUILayout.Button("Save Unit Type"))
         {
             if(_squadManager.AllTypesUnit.Count != 0)
             EnumCreator.WritePlayerType(_squadManager.AllTypesUnit);

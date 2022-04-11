@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,12 +11,17 @@ public class Squad : MonoBehaviour
     public float Destination;
     public PlayerName Player;
 
+    private void Start()
+    {
+          SquadManager.Instance.AllSquads.Add(this);
+    }
 
     public void OnStart()
     {
-        
+      
         for (int i = 0; i < AllUnits.Count; i++)
         {
+            Debug.Log("test");
             AllUnits[i].OnStart();
         }   
     }

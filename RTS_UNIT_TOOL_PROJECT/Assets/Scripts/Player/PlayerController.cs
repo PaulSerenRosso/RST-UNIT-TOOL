@@ -9,18 +9,20 @@ public class PlayerController : MonoBehaviour
    private LayerMask _maskSquad;
    [SerializeField]
    private LayerMask _maskTarget;
+   
+   public InputMaster Master;
 
-   [SerializeField]
-   private InputMaster _master;
+   private TerrainData a;
    
    private bool _isSelect;
    private bool _inInputSelect;
    private Squad _squadSelected;
    void Start()
    {
-       _master.Player.Select.performed += context => Select(context);
-       _master.Player.Select.canceled += context => EndSelect(context);
-       _master.Player.Deselect.performed += context => Deselect(context);
+      
+       Master.Player.Select.performed += context => Select(context);
+       Master.Player.Select.canceled += context => EndSelect(context);
+       Master.Player.Deselect.performed += context => Deselect(context);
    }
    void Update()
    {

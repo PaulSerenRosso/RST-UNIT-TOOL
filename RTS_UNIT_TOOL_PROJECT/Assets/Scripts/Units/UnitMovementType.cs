@@ -5,8 +5,9 @@ using UnityEngine;
 public enum UnitMovmentType
 {
 
-    Earthly,
+   
     Aerial,
+    Earthly,
     Underground
     
 }

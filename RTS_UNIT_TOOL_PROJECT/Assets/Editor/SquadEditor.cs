@@ -14,13 +14,15 @@ public class SquadEditor : Editor
 
     public override void OnInspectorGUI()
     {
+        
         base.OnInspectorGUI();
+        Debug.Log(_squad.AllUnits.Count);
         GUILayout.Label("Update Squad when it's put in the scene");
         if (GUILayout.Button("Update Squad"))
         {
             Debug.Log(_squad.transform.childCount);
        
-            for (int i =_squad.transform.childCount-1;i > 0; i--)
+            for (int i =_squad.transform.childCount-1;i > 1; i--)
             {
                 Transform unitTransform = _squad.transform.GetChild(i);
                DestroyImmediate(unitTransform.gameObject); 
@@ -44,7 +46,11 @@ public class SquadEditor : Editor
                 UnitScript unitScript = unitTransform.GetComponent<UnitScript>();
                 unitScript.Squad = _squad;
                 _squad.AllUnits.Add(unitScript);
+          
+               
             }
+
+            EditorUtility.SetDirty(target);
         }
     }
 }
