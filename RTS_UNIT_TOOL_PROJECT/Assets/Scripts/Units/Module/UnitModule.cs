@@ -6,17 +6,17 @@ public class UnitModule : MonoBehaviour
 {
  public List<UnitJobData> currentJobsData;
 
- void OnStart()
+ public virtual void OnStart()
  {
   
  }
 
- void OnUpdate()
+ public virtual void OnUpdate()
  {
   
  }
 
- void OnEnd()
+ public virtual void OnEnd()
  {
   
  }

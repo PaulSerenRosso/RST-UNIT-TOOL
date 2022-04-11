@@ -3,6 +3,7 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
+using UnityEditor;
 using UnityEngine;
 
 public class SquadManager : MonoBehaviour
@@ -12,10 +13,6 @@ public class SquadManager : MonoBehaviour
     public List<string> AllTypesUnit;
     private List<UnitScript> _allUnits;
     
-    
-
-
-   
    void Start()
    {
        for (int i = 0; i < AllSquads.Count; i++)
@@ -27,6 +24,9 @@ public class SquadManager : MonoBehaviour
 
     private void OnValidate()
     {
+        if (EditorApplication.isPlayingOrWillChangePlaymode && EditorApplication.isCompiling)
+       return;
+     
         _allUnits.Clear();
         for (int i = 0; i <AllSquads.Count ; i++)
         {
@@ -37,7 +37,7 @@ public class SquadManager : MonoBehaviour
     private void Update()
     {
         // update la destruction d'unité sur le maintread
-     UpdateUnitCell();
+    // UpdateUnitCell();
      for (int i = 0; i < AllSquads.Count; i++)
         {
             AllSquads[i].OnUpdate();

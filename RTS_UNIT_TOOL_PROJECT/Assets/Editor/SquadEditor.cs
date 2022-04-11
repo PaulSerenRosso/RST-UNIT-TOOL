@@ -18,10 +18,13 @@ public class SquadEditor : Editor
         GUILayout.Label("Update Squad when it's put in the scene");
         if (GUILayout.Button("Update Squad"))
         {
-            for (int i =_squad.transform.childCount-1; i == 0; i--)
+            Debug.Log(_squad.transform.childCount);
+       
+            for (int i =_squad.transform.childCount-1;i > 0; i--)
             {
                 Transform unitTransform = _squad.transform.GetChild(i);
                DestroyImmediate(unitTransform.gameObject); 
+               Debug.Log("testst");
             }
             
             // lock la position des 
