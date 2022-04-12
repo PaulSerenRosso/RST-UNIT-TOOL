@@ -7,6 +7,7 @@ public class SquadEditor : Editor
 {
     private Squad _squad;
 //système de spawn
+
     void OnEnable()
     {
         _squad = (Squad) target;
@@ -40,14 +41,16 @@ public class SquadEditor : Editor
                  GameObject unit =(GameObject) PrefabUtility.InstantiatePrefab(_squad.SpawnerUnits[i].unitObject,_squad.transform);
                 }
             }
+
+            MapManager map = FindObjectOfType<MapManager>(); 
             for (int i = 0; i < _squad.transform.childCount; i++)
             {
                 Transform unitTransform = _squad.transform.GetChild(i);
                 UnitScript unitScript = unitTransform.GetComponent<UnitScript>();
+                Vector2 randomPosition = Random.insideUnitCircle*_squad.SpawnAreasSize[(int)unitScript.MovmentType];
+                unitTransform.position= new Vector3(unitTransform.position.x+randomPosition.x,map.AllTerrains[(int) unitScript.MovmentType].Terrain.transform.position.y,unitTransform.position.z+randomPosition.y);
                 unitScript.Squad = _squad;
                 _squad.AllUnits.Add(unitScript);
-          
-               
             }
 
             EditorUtility.SetDirty(target);

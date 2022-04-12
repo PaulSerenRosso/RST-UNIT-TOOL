@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Squad : MonoBehaviour
 {
+    public List<float> SpawnAreasSize;
     public List<UnitScript> AllUnits;
    public List<SpawnerUnit> SpawnerUnits;
     public bool IsSelected;

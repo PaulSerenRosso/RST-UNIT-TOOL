@@ -35,17 +35,11 @@ public class UnitScript : MonoBehaviour
                
            }
        }
-      
-       //NavMesh.GetAreaFromName(MovmentType.ToString());
     }
 
 
     public void OnStart()
     {
-        Agent.enabled = false;
-        Debug.Log("test");
-        Agent.Warp(new Vector3(transform.position.x,MapManager.Instance.AllTerrains[(int) MovmentType].Terrain.transform.position.y,transform.position.z));
-        Agent.enabled = true;
         ModuleManager.OnStart();
     }
     
