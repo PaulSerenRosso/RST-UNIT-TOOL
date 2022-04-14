@@ -12,6 +12,7 @@ public class SquadManager : MonoBehaviour
     public List<Squad> AllSquads;
     public List<string> AllTypesUnit;
     private List<UnitScript> _allUnits = new List<UnitScript>();
+    private List<UnitScript> _currentUnitsMove = new List<UnitScript>();
     public static SquadManager Instance { get; private set; }
  
     void Awake()
@@ -42,7 +43,7 @@ public class SquadManager : MonoBehaviour
     private void Update()
     {
         // update la destruction d'unité sur le maintread
-    // UpdateUnitCell();
+     UpdateUnitCell();
      for (int i = 0; i < AllSquads.Count; i++)
         {
             AllSquads[i].OnUpdate();
@@ -52,21 +53,37 @@ public class SquadManager : MonoBehaviour
     void UpdateUnitCell()
     {
         
-         var _updateUnitCellData = new NativeArray<UpdateUnitCellData>(_allUnits.Count, Allocator.TempJob);
+         _currentUnitsMove.Clear();
          for (int i = 0; i < _allUnits.Count; i++)
+         {
+             if(_allUnits[i].isMove)
+                 _currentUnitsMove.Add(_allUnits[i]);
+         }
+         if(_currentUnitsMove.Count == 0)
+             return;
+         var _updateUnitCellData = new NativeArray<UpdateUnitCellData>(_currentUnitsMove.Count, Allocator.TempJob);
+         for (int i = 0; i < _currentUnitsMove.Count; i++)
                 {
-                    _updateUnitCellData[i] = new UpdateUnitCellData(_allUnits[i].Cell,_allUnits[i], _gridManager);
+                    _updateUnitCellData[i] = new UpdateUnitCellData(_currentUnitsMove[i].Cell,_currentUnitsMove[i], _gridManager);
                 }
                 UpdateUnitCellJob updateUnitCell = new UpdateUnitCellJob
                 {
                   AllData = _updateUnitCellData
                 };
-                JobHandle _handle=updateUnitCell.Schedule(_allUnits.Count, 50);
+                JobHandle _handle=updateUnitCell.Schedule(_currentUnitsMove.Count, 50);
                 _handle.Complete();
                 
-                for (int i = 0; i < _allUnits.Count; i++)
+                for (int i = 0; i < _currentUnitsMove.Count; i++)
                 {
-                    _allUnits[i].Cell = _gridManager._grid[_updateUnitCellData[i].CurrentId];
+                    if(_updateUnitCellData[i].CurrentId == -1)
+                        continue;
+                    if(_currentUnitsMove[i].Cell.id == _updateUnitCellData[i].CurrentId )
+                        continue;
+                    if (_currentUnitsMove[i].Cell.TryGetIndexList(_currentUnitsMove[i].MovmentType, out int RemoveIndex))
+                    _currentUnitsMove[i].Cell.AllUnits[RemoveIndex].Units.Remove(_currentUnitsMove[i]);
+                    _currentUnitsMove[i].Cell = _gridManager.Grid[_updateUnitCellData[i].CurrentId];
+                    if (_currentUnitsMove[i].Cell.TryGetIndexList(_currentUnitsMove[i].MovmentType, out int AddIndex))
+                    _currentUnitsMove[i].Cell.AllUnits[AddIndex].Units.Add(_currentUnitsMove[i]);
                 }
                 _updateUnitCellData.Dispose();
     }
@@ -114,8 +131,11 @@ public class SquadManager : MonoBehaviour
             else if (data.UnitPosition.z < data.MinCellPosition.z)
                 data.OffSet.z -= 1;
 
-            if(data.OffSet.Equals(int3.zero))
+            if (data.OffSet.Equals(int3.zero))
+            {
+                data.CurrentId = -1; 
                 return;
+            }
             data.OffSet *= data.CellFactor;
             data.CurrentId += data.OffSet.x + data.OffSet.y + data.OffSet.z;
             AllData[index] = data;

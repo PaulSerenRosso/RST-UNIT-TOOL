@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 99326304805772892}
   - component: {fileID: 4309606450532485256}
   - component: {fileID: 4853734262114477457}
-  - component: {fileID: 1304730325915956050}
+  - component: {fileID: 1195411354725273818}
   - component: {fileID: 1102673392102294158}
   - component: {fileID: 6300885469562255532}
   - component: {fileID: 1394009640275617974}
@@ -127,11 +127,15 @@ MonoBehaviour:
       x: 0
       y: 0
       z: 0
+    AllUnits: []
+    Color: {r: 0, g: 0, b: 0, a: 0}
   Squad: {fileID: 0}
   ModuleManager: {fileID: 1102673392102294158}
   MovmentType: 1
+  isMove: 0
   Agent: {fileID: 8462544396134821503}
---- !u!114 &1304730325915956050
+  MovementCellIndexList: 0
+--- !u!114 &1195411354725273818
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -140,10 +144,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 5264829477169092233}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: babb4e0da541a794d8b61b70965645a7, type: 3}
+  m_Script: {fileID: 11500000, guid: f78bc0ac2d6621945b439e16f531de58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _gridManager: {fileID: 0}
+  UnitsResults: []
 --- !u!114 &1102673392102294158
 MonoBehaviour:
   m_ObjectHideFlags: 0

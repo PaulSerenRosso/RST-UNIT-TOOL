@@ -74,5 +74,41 @@ public class MapManagerEditor : Editor
             // que ensuite je les assigne à la liste et au terrain 
             // puis enfin il faut que je bake
         }
+
+        if (GUILayout.Button("Update GridCells With Terrain"))
+        {
+           
+            GridManager grid = FindObjectOfType<GridManager>();
+            for (int i = 0; i < _mapManager.AllTerrains.Count; i++)
+            {
+                Debug.Log(_mapManager.AllTerrains[i].YPosition-grid.transform.position.y);
+                Debug.Log(_mapManager.AllTerrains[i].YMaxPosition-grid.transform.position.y);
+              int currentMinLine = Mathf.FloorToInt((_mapManager.AllTerrains[i].YPosition-grid.transform.position.y) / grid.SizeCells.y);
+              currentMinLine += 1;
+              int currentMaxLine = Mathf.FloorToInt((_mapManager.AllTerrains[i].YMaxPosition-grid.transform.position.y) / grid.SizeCells.y);
+              currentMaxLine += 1;
+              
+              int _maxID = (currentMaxLine)*grid.CellCount.z+grid.CellCount.z;
+             int _minID = (currentMinLine)*grid.CellCount.z+grid.CellCount.z-grid.CellCount.z;
+             Debug.Log(_mapManager.AllTerrains[i].MovmentType.ToString()+_maxID);
+             Debug.Log(_mapManager.AllTerrains[i].MovmentType.ToString()+_minID);
+             for (int k = 0; k < grid.CellCount.x ; k++)
+             {
+                 int _finalMaxID = (k) * (grid.CellCount.y * grid.CellCount.z) + _maxID;
+                 int _finalMinID = (k) * (grid.CellCount.y * grid.CellCount.z) + _minID;
+                 for (int j = _finalMinID; j < _finalMaxID; j++)
+                 {
+                     grid.Grid[j].AllUnits = new List<UnitMovmentList>();
+                     UnitMovmentList unitMovmentList = new UnitMovmentList();
+                     unitMovmentList.MovmentType = _mapManager.AllTerrains[i].MovmentType;
+                     
+                     grid.Grid[j].AllUnits.Add(unitMovmentList);
+                     grid.Grid[j].Color += _mapManager.AllTerrains[i].Color;
+                 }
+             }
+            }
+
+         
+        }
     }
 }

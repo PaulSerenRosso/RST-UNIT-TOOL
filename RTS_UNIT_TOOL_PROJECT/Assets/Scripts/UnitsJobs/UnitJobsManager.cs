@@ -14,7 +14,7 @@ public class UnitJobsManager : MonoBehaviour
     public List<UnitJobData.TransformUnits> TransformUnitsData;
 
     
-
+// check si un truc est null si non tu lance un job à partir de la list
     private void OnValidate()
     {
         

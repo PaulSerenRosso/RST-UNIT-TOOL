@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -8,13 +9,14 @@ public class UnitScript : MonoBehaviour
     public Squad Squad;
     public UnitModuleManager ModuleManager;
     public UnitMovmentType MovmentType;
+    public bool isMove; 
     public NavMeshAgent Agent;
+    public int MovementCellIndexList;
 
 
     private void OnValidate()
     {
-       Debug.Log(NavMesh.GetAreaFromName(MovmentType.ToString()));
-       switch (MovmentType)
+        switch (MovmentType)
        {
            case UnitMovmentType.Aerial:
            { 
@@ -36,8 +38,6 @@ public class UnitScript : MonoBehaviour
            }
        }
     }
-
-
     public void OnStart()
     {
         ModuleManager.OnStart();

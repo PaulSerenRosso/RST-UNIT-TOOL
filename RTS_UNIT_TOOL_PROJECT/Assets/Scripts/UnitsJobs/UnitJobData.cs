@@ -10,6 +10,7 @@ public class UnitJobData
         public int index;
     }
 
+    // je check els trucs proches unit 
     public struct UnitsNeighboursCell
     {
         public Base BaseData;
@@ -19,14 +20,12 @@ public class UnitJobData
     {
         public Base BaseData;
     }
-    
-    public struct TransformUnits
+    public struct UnitsBool
     {
         public Base BaseData;
     }
     
-    
-    public struct UnitsBool
+    public struct TransformUnits
     {
         public Base BaseData;
     }
