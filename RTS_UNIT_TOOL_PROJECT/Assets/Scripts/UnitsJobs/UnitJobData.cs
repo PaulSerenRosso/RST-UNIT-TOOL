@@ -1,34 +1,66 @@
 using System;
+using System.Collections.Generic;
+using System.Numerics;
+using Unity.Collections;
+using Unity.Mathematics;
 
 
 public class UnitJobData
 {
     [Serializable]
-    public struct Base
+    public class Base
     {
         public UnitModule module;
         public int index;
     }
 
-    // je check els trucs proches unit 
-    public struct UnitsNeighboursCell
+    // pour tout les jobs
+    public class UnitsDistance : Base
     {
-        public Base BaseData;
+        public float3 BaseUnitPosition;
+        public DistanceCell DistanceCheck;
+        public List<int> TypeMovmentUnit;
+        public List<List<int>> CellTypeMovment;
     }
     
-    public struct UnitsDistance
+    public struct NeighbourCells
     {
-        public Base BaseData;
-    }
-    public struct UnitsBool
-    {
-        public Base BaseData;
+        public float3 DistanceCell;
+        public float3 BaseUnitPosition;
+        public NativeArray<int> NeighbourCellsID;
+
+        public void SetValues(float3 distanceCell,  float3 baseUnitPosition)
+        {
+            DistanceCell = distanceCell;
+            BaseUnitPosition = baseUnitPosition;
+        }
     }
     
-    public struct TransformUnits
+    public struct UnitsWithMovmentType
     {
-        public Base BaseData;
+        public NativeArray<NativeArray<int>> TypeMovmentCells;
+        public NativeArray<int> TypeMovmentUnit;
+        public NativeArray<int> indexUnit;
+        public void SetValues()
+        {
+            
+        }
     }
+    
+    public struct UnitsAtDistance
+    {
+        public float Distance;
+        public float3 BaseUnitPosition; 
+        public NativeArray<float3> UnitsPosition;
+        public NativeArray<int> indexUnit;
+        public void SetValues()
+        {
+            
+        }
+    }
+    
+    
+    
     
     
 }

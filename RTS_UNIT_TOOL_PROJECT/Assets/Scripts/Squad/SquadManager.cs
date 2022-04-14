@@ -8,6 +8,7 @@ using UnityEngine;
 
 public class SquadManager : MonoBehaviour
 {
+    [SerializeField] private UnitJobsManager _unitJobsManager; 
     [SerializeField] private GridManager _gridManager;
     public List<Squad> AllSquads;
     public List<string> AllTypesUnit;
@@ -84,6 +85,7 @@ public class SquadManager : MonoBehaviour
                     _currentUnitsMove[i].Cell = _gridManager.Grid[_updateUnitCellData[i].CurrentId];
                     if (_currentUnitsMove[i].Cell.TryGetIndexList(_currentUnitsMove[i].MovmentType, out int AddIndex))
                     _currentUnitsMove[i].Cell.AllUnits[AddIndex].Units.Add(_currentUnitsMove[i]);
+                    _currentUnitsMove[i].MovementCellIndexList = AddIndex;
                 }
                 _updateUnitCellData.Dispose();
     }
