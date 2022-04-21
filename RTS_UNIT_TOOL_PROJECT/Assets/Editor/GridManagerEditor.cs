@@ -42,9 +42,11 @@ public class GridManagerEditor : Editor
                             (float3) _gridManager.transform.position + new float3(x * _gridManager.SizeCells.x,
                                 y * _gridManager.SizeCells.y, _gridManager.SizeCells.z * z);
                         cell.MaxPosition = cell.MinPosition + _gridManager.SizeCells;
-                        cell.CenterPosition = cell.MinPosition + _gridManager.SizeCells / 2;
+                        cell.CenterPosition = cell.MinPosition + _gridManager.SizeCells / 2;       
+                        cell.ID = _gridManager.Grid.Count;
+                        cell.LinesPosition = new int3(x, y, z);
                         _gridManager.Grid.Add(cell);
-                        cell.id = _gridManager.Grid.Count - 1; 
+                 
                     }
                 }
             }

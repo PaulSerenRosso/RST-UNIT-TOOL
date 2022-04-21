@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
@@ -8,12 +9,16 @@ using UnityEngine;
 
 public class SquadManager : MonoBehaviour
 {
-    [SerializeField] private UnitJobsManager _unitJobsManager; 
+    [SerializeField] private UnitsDistanceJobsManager _unitJobsManager; 
     [SerializeField] private GridManager _gridManager;
     public List<Squad> AllSquads;
     public List<string> AllTypesUnit;
-    private List<UnitScript> _allUnits = new List<UnitScript>();
+    public List<UnitScript> AllUnits = new List<UnitScript>();
     private List<UnitScript> _currentUnitsMove = new List<UnitScript>();
+
+
+    [SerializeField]
+    private int _updateCellJobsSize;
     public static SquadManager Instance { get; private set; }
  
     void Awake()
@@ -29,15 +34,16 @@ public class SquadManager : MonoBehaviour
        {
            AllSquads[i].OnStart();
        }
+       
    }
    
 
     private void OnValidate()
     {
-        _allUnits.Clear();
+        AllUnits.Clear();
         for (int i = 0; i <AllSquads.Count ; i++)
         {
-          _allUnits.AddRange(AllSquads[i].AllUnits);  
+          AllUnits.AddRange(AllSquads[i].AllUnits);  
         }
     }
 
@@ -45,20 +51,24 @@ public class SquadManager : MonoBehaviour
     {
         // update la destruction d'unité sur le maintread
      UpdateUnitCell();
+     for (int i = 0; i < AllUnits.Count; i++)
+     {
+        AllUnits[i].AskUpdate();
+     }
+    _unitJobsManager.OnUpdate();    
      for (int i = 0; i < AllSquads.Count; i++)
-        {
-            AllSquads[i].OnUpdate();
+     {
+         AllSquads[i].OnUpdate();
         }
     }
 
     void UpdateUnitCell()
     {
-        
-         _currentUnitsMove.Clear();
-         for (int i = 0; i < _allUnits.Count; i++)
+        _currentUnitsMove.Clear();
+         for (int i = 0; i < AllUnits.Count; i++)
          {
-             if(_allUnits[i].isMove)
-                 _currentUnitsMove.Add(_allUnits[i]);
+             if(AllUnits[i].isMove)
+                 _currentUnitsMove.Add(AllUnits[i]);
          }
          if(_currentUnitsMove.Count == 0)
              return;
@@ -67,29 +77,34 @@ public class SquadManager : MonoBehaviour
                 {
                     _updateUnitCellData[i] = new UpdateUnitCellData(_currentUnitsMove[i].Cell,_currentUnitsMove[i], _gridManager);
                 }
-                UpdateUnitCellJob updateUnitCell = new UpdateUnitCellJob
+                UpdateUnitCellJob _updateUnitCell = new UpdateUnitCellJob
                 {
                   AllData = _updateUnitCellData
                 };
-                JobHandle _handle=updateUnitCell.Schedule(_currentUnitsMove.Count, 50);
+                JobHandle _handle=_updateUnitCell.Schedule(_currentUnitsMove.Count, _updateCellJobsSize);
                 _handle.Complete();
-                
-                for (int i = 0; i < _currentUnitsMove.Count; i++)
-                {
-                    if(_updateUnitCellData[i].CurrentId == -1)
-                        continue;
-                    if(_currentUnitsMove[i].Cell.id == _updateUnitCellData[i].CurrentId )
-                        continue;
-                    if (_currentUnitsMove[i].Cell.TryGetIndexList(_currentUnitsMove[i].MovmentType, out int RemoveIndex))
-                    _currentUnitsMove[i].Cell.AllUnits[RemoveIndex].Units.Remove(_currentUnitsMove[i]);
-                    _currentUnitsMove[i].Cell = _gridManager.Grid[_updateUnitCellData[i].CurrentId];
-                    if (_currentUnitsMove[i].Cell.TryGetIndexList(_currentUnitsMove[i].MovmentType, out int AddIndex))
-                    _currentUnitsMove[i].Cell.AllUnits[AddIndex].Units.Add(_currentUnitsMove[i]);
-                    _currentUnitsMove[i].MovementCellIndexList = AddIndex;
-                }
+                SetNewUnitCells(_updateUnitCell);
                 _updateUnitCellData.Dispose();
+        
     }
-    
+
+    void SetNewUnitCells(UpdateUnitCellJob updateUnitCellJob)
+    {
+        for (int i = 0; i < _currentUnitsMove.Count; i++)
+        {
+            if(updateUnitCellJob.AllData[i].CurrentId == -1)
+                continue;
+            if(_currentUnitsMove[i].Cell.ID == updateUnitCellJob.AllData[i].CurrentId )
+                continue;
+            if (_currentUnitsMove[i].Cell.TryGetIndexList(_currentUnitsMove[i].MovmentType, out int RemoveIndex))
+                _currentUnitsMove[i].Cell.AllUnits[RemoveIndex].Units.Remove(_currentUnitsMove[i]);
+            _currentUnitsMove[i].Cell = _gridManager.Grid[updateUnitCellJob.AllData[i].CurrentId];
+            if (_currentUnitsMove[i].Cell.TryGetIndexList(_currentUnitsMove[i].MovmentType, out int AddIndex))
+                _currentUnitsMove[i].Cell.AllUnits[AddIndex].Units.Add(_currentUnitsMove[i]);
+            _currentUnitsMove[i].MovementCellIndexList = AddIndex;
+        }
+    }
+
     public struct UpdateUnitCellData
     {
         public float3 UnitPosition;
@@ -103,7 +118,7 @@ public class SquadManager : MonoBehaviour
             UnitPosition = unit.transform.position;
             MinCellPosition = gridCell.MinPosition;
             MaxCellPosition = gridCell.MaxPosition;
-            CurrentId = gridCell.id;
+            CurrentId = gridCell.ID;
             OffSet = new int3(0,0,0);
             CellFactor = gridManager.CellFactor;
         }

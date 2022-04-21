@@ -25,6 +25,24 @@ public class UnitModuleManager : MonoBehaviour
     {
         
     }
+
+    public void AskUpdate()
+    {
+        for (int i = 0; i < StartModules.Count; i++)
+        {
+            StartModules[i].AskUpdate();
+        }
+        StartModules.Clear();
+        for (int i = 0; i < CurrentModules.Count; i++)
+        {
+            CurrentModules[i].AskUpdate();
+        }
+
+        for (int i = 0; i < EndModules.Count; i++)
+        {
+            EndModules[i].AskUpdate();
+        }
+    }
     
     public void OnUpdate()
     {

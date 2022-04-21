@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
@@ -24,12 +25,19 @@ public float3 SizeCells;
       Gizmos.color = Grid[i].Color;
    
          Gizmos.DrawWireCube(Grid[i].CenterPosition,SizeCells );
-         
       }
-      Gizmos.DrawSphere(Grid[79].CenterPosition, 1f);
+      
+  
    
    }
 
-
+   private void OnDrawGizmos()
+   {
+      for (int i = 0; i < Grid.Count; i++)
+      { ;
+         Gizmos.color = Grid[i].Color;
    
+         Gizmos.DrawWireCube(Grid[i].CenterPosition,SizeCells/5);
+      }
+   }
 }

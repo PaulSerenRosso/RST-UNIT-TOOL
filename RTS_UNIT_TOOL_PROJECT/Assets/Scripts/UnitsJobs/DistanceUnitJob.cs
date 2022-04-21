@@ -5,8 +5,9 @@ using Unity.Mathematics;
 using UnityEngine;
 
 [Serializable]
-public struct DistanceCell
+public struct DistanceUnitJob
 {
-    public float Distance;
-    public float3 LineCount;
+    public float Square;
+    public int3 LinesCell;
+    public int Area;
 }

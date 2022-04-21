@@ -12,17 +12,26 @@ public class Squad : MonoBehaviour
     public float Destination;
     public PlayerName Player;
 
+
+  
+
     private void Start()
     {
-          SquadManager.Instance.AllSquads.Add(this);
+        if (!SquadManager.Instance.AllSquads.Contains(this))
+        {
+            SquadManager.Instance.AllSquads.Add(this);
+            SquadManager.Instance.AllUnits.AddRange(AllUnits);
+        }
     }
 
     public void OnStart()
     {
+        
+     
       
         for (int i = 0; i < AllUnits.Count; i++)
         {
-            Debug.Log("test");
+         
             AllUnits[i].OnStart();
         }   
     }

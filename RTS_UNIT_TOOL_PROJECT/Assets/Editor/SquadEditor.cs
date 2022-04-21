@@ -38,6 +38,7 @@ public class SquadEditor : Editor
             SetUnitsVariables(map, grid);
             EditorUtility.SetDirty(target);
         }
+        
     }
 
     void DestroyOldUnits()
@@ -75,6 +76,7 @@ public class SquadEditor : Editor
             UnitScript unitScript = _squad.AllUnits[i];
             SetUnitPosition(unitScript, map);
             SetUnitCell( unitScript, grid);
+            EditorUtility.SetDirty(unitScript);
         }
     }
 
@@ -101,6 +103,7 @@ public class SquadEditor : Editor
         int idCell = (finalCellCount.x ) * grid.CellCount.y * grid.CellCount.z +
             (finalCellCount.y ) * grid.CellCount.z + finalCellCount.z ;
     
+        Debug.Log(idCell);
         unitScript.Cell = grid.Grid[idCell];
         
         if (unitScript.Cell.TryGetIndexList(unitScript.MovmentType, out int index))
@@ -110,6 +113,8 @@ public class SquadEditor : Editor
                     
                     unitScript.Cell.AllUnits[index].Units.Add(unitScript);
                     unitScript.MovementCellIndexList = index;
+                 
+           
         }
         else
         {

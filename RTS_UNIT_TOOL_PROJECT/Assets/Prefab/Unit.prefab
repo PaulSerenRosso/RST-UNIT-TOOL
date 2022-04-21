@@ -114,27 +114,46 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Cell:
-    id: 0
+    ID: 0
     MinPosition:
-      x: 0
-      y: 0
-      z: 0
+      x: -0.2800002
+      y: -0.13333416
+      z: -3.58
     MaxPosition:
-      x: 0
-      y: 0
-      z: 0
+      x: 4.97
+      y: 2.199999
+      z: 1.6700001
     CenterPosition:
+      x: 2.3449998
+      y: 1.0333325
+      z: -0.9549999
+    AllUnits:
+    - Units: []
+      MovmentType: 2
+    LinesPosition:
       x: 0
       y: 0
       z: 0
-    AllUnits: []
-    Color: {r: 0, g: 0, b: 0, a: 0}
+    Color: {r: 1, g: 1, b: 0.09392524, a: 0.92156863}
   Squad: {fileID: 0}
   ModuleManager: {fileID: 1102673392102294158}
   MovmentType: 1
   isMove: 0
   Agent: {fileID: 8462544396134821503}
   MovementCellIndexList: 0
+  Results: {fileID: 1195411354725273818}
+  testDistance:
+    Base: 10
+    DistanceJob:
+      Square: 100
+      LinesCell:
+        x: 2
+        y: 4
+        z: 2
+      Area: 225
+  test: 01000000
+  index: 0
+  testst: 0
 --- !u!114 &1195411354725273818
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -147,7 +166,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f78bc0ac2d6621945b439e16f531de58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  UnitsResults: []
 --- !u!114 &1102673392102294158
 MonoBehaviour:
   m_ObjectHideFlags: 0

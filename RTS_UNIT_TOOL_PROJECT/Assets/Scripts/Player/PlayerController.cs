@@ -19,7 +19,7 @@ public class PlayerController : MonoBehaviour
    private Squad _squadSelected;
    void Start()
    {
-      
+       Master = new InputMaster();
        Master.Player.Select.performed += context => Select(context);
        Master.Player.Select.canceled += context => EndSelect(context);
        Master.Player.Deselect.performed += context => Deselect(context);

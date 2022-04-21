@@ -4,13 +4,17 @@ using UnityEngine.Serialization;
 
 public class UnitModule : MonoBehaviour
 {
- public List<UnitJobData> currentJobsData;
+ public UnitScript Unit;
 
  public virtual void OnStart()
  {
   
  }
 
+ public virtual void AskUpdate()
+ {
+  
+ }
  public virtual void OnUpdate()
  {
   

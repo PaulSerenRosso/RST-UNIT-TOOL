@@ -6,11 +6,12 @@ using UnityEngine;
 [Serializable]
 public class GridCell
 {
-    public int id;
+    public int ID;
     public float3 MinPosition;
     public float3 MaxPosition;
     public float3 CenterPosition;
     public List<UnitMovmentList> AllUnits;
+    public int3 LinesPosition;
     [HideInInspector] public Color Color;
 
     public bool TryGetIndexList(UnitMovmentType unitMovmentList, out int index)
