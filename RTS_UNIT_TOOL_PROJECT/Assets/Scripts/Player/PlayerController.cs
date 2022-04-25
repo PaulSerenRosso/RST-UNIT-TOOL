@@ -73,10 +73,7 @@ public class PlayerController : MonoBehaviour
         if (_inInputSelect && hasRelease)
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-            Debug.Log(ray.direction);
-            Debug.Log(ray.origin);
-            Debug.Log("test");
+            
             
             if (_isSelect )
             {

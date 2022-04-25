@@ -106,6 +106,7 @@ public class Squad : MonoBehaviour
                     {
                         AllUnits[i].Units[j].Agent.SetDestination(destinationSquadList[k].Position);
                         AllUnits[i].Units[j].IsMove = true;
+                        Debug.Log(AllUnits[i].Units[j].name);
                         AllUnits[i].Units[j].DestinationIsPoint = true;
                         AllUnits[i].Units[j].DestinationIndex = k; 
                         break;

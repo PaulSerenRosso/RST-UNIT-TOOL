@@ -185,15 +185,7 @@ _unitsAtDistanceDatas.Dispose();
        
             
         }
-
-        for (int j = 0; j < DistanceUnitsData.Count; j++)
-        {
-             for (int i = minCountUnits[j].MinIndex ; i < minCountUnits[j].MaxIndex; i++)
-                    {
-                       Debug.Log(DistanceUnitsData[j].Unit.Cell.ID + DistanceUnitsData[j].Unit.name+"quand je recherche lmov" + i + "cell" + unitsMovment[i].Cell.ID); 
-                    }
-        }
-       
+        
         
 unitsPosition = new NativeArray<float3>(unitsPositionList.Count, Allocator.TempJob);
 for (int i = 0; i < unitsPositionList.Count; i++)
