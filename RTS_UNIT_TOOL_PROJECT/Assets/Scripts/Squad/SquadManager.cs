@@ -52,7 +52,7 @@ public class SquadManager : MonoBehaviour
 
     private void Update()
     { 
-        Debug.Log("IL FAUT QUE CHECK " +_gridManager.Grid[1322].AllUnits[0].Units.Count);
+   
         // update la destruction d'unité sur le maintread
      UpdateUnitCell();
      for (int i = 0; i < AllUnits.Count; i++)

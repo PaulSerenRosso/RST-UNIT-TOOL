@@ -21,7 +21,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5264829477169092233, guid: 3a7eea94e75d86645b104edcd90525a4, type: 3}
       propertyPath: m_Name
-      value: AerialVariant
+      value: AerialUnit
       objectReference: {fileID: 0}
     - target: {fileID: 5264829477169092233, guid: 3a7eea94e75d86645b104edcd90525a4, type: 3}
       propertyPath: m_Layer
@@ -70,6 +70,10 @@ PrefabInstance:
     - target: {fileID: 6611369710700906934, guid: 3a7eea94e75d86645b104edcd90525a4, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8462544396134821503, guid: 3a7eea94e75d86645b104edcd90525a4, type: 3}
+      propertyPath: m_AngularSpeed
+      value: 125
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3a7eea94e75d86645b104edcd90525a4, type: 3}

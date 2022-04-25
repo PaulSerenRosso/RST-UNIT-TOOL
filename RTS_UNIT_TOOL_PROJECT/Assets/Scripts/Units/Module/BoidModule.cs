@@ -9,9 +9,9 @@ public class BoidModule : UnitModule
     [SerializeField] private BoidSO _boidSO;
     private List<int> _movmentTypeIndices = new List<int>();
 
-    private int[] _indicesResults = new int[3]
+    private int[] _indicesResults = new int[4]
     {
-        -1, -1, -1
+        -1, -1, -1,-1
     };
 
     // déplace le comportement de destination sur le boid module
@@ -28,12 +28,16 @@ public class BoidModule : UnitModule
     // end destination
     void OnDrawGizmosSelected()
     {
+        if(_boidSO == null)
+            return;
         Gizmos.color = Color.magenta;
         Gizmos.DrawWireSphere(transform.position, _boidSO.AllDistanceCellsClass[0].Base);
         Gizmos.color = Color.black;
         Gizmos.DrawWireSphere(transform.position, _boidSO.AllDistanceCellsClass[1].Base);
         Gizmos.color = Color.red + Color.yellow;
         Gizmos.DrawWireSphere(transform.position, _boidSO.AllDistanceCellsClass[2].Base);
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(transform.position, _boidSO.AllDistanceCellsClass[3].Base);
     }
 
     public override void OnValidate()
@@ -41,6 +45,7 @@ public class BoidModule : UnitModule
         base.OnValidate();
         if (_movmentTypeIndices.Count == 0)
             _movmentTypeIndices.Add((int) Unit.MovmentType);
+   
     }
 
     public override void OnStart()
@@ -51,10 +56,11 @@ public class BoidModule : UnitModule
     {
         if (Unit.IsMove)
         {
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 4; i++)
             {
                 Unit.Results.AskDistanceUnit(Unit, _boidSO.AllDistanceCellsClass[i].DistanceJob, _movmentTypeIndices,
                     out _indicesResults[i]);
+           
             }
         }
     }
@@ -65,7 +71,7 @@ public class BoidModule : UnitModule
         {
             SendDataBoidJobs();
                    CheckDestinationUnit();
-                   ManageDistanceJobsResults(); 
+                
         }
        
     }
@@ -76,11 +82,11 @@ public class BoidModule : UnitModule
         List<List<Transform>> _unitsTransform = new List<List<Transform>>();
         for (int i = 0; i < 3; i++)
         {
-            Debug.Log(_indicesResults[i]);
+       
             List<Transform> _currentUnitsTransform = new List<Transform>();
-            for (int j = 0; j < Unit.Results.UnitsResults[_indicesResults[i]].Count; j++)
+            for (int j = 0; j < Unit.Results.UnitsResults[_indicesResults[i]].Units.Count; j++)
             {
-                _currentUnitsTransform.Add(Unit.Results.UnitsResults[_indicesResults[i]][j].transform);
+                _currentUnitsTransform.Add(Unit.Results.UnitsResults[_indicesResults[i]].Units[j].transform);
             }
 
             _unitsTransform.Add(_currentUnitsTransform);
@@ -98,30 +104,35 @@ public class BoidModule : UnitModule
         Unit.DestinationIsPoint = false;
         Unit.Squad.Destinations[Unit.DestinationIndex].FirstUnitReachedDestination = false;
         Unit.IsMove = false;
+        Unit.Squad.EndDestinationPoint();
     }
 
     void CheckDestinationUnit()
     {
-        List<UnitScript> _avoidanceUnits = new List<UnitScript>(Unit.Results.UnitsResults[_indicesResults[2]]);
+        List<UnitScript> _endDestinationUnits = new List<UnitScript>();
+        _endDestinationUnits.AddRange(Unit.Results.UnitsResults[_indicesResults[3]].Units);
 
         if (Unit.DestinationIsPoint)
         {
             if (!Unit.Squad.Destinations[Unit.DestinationIndex].FirstUnitReachedDestination)
             {
-                if (Unit.Agent.pathStatus == NavMeshPathStatus.PathComplete &&
-                    Unit.Agent.remainingDistance <= 0.1f)
+                Debug.Log(Unit.Agent.remainingDistance);
+                if (Unit.Agent.remainingDistance <= _boidSO.DistanceEndDestination)
                 {
                     EndDestinationPoint();
+                    Unit.Squad.Destinations[Unit.DestinationIndex].FirstUnitReachedDestination = true; 
                 }
             }
             else
             {
-                for (int i = 0; i < _avoidanceUnits.Count; i++)
+                for (int i = 0; i < _endDestinationUnits.Count; i++)
                 {
-                    if (_avoidanceUnits[i].Squad == Unit.Squad)
+                    Debug.Log(_endDestinationUnits[i].name);
+                    if (_endDestinationUnits[i].Squad == Unit.Squad)
                     {
-                        if (!_avoidanceUnits[i].DestinationIsPoint)
+                        if (!_endDestinationUnits[i].DestinationIsPoint)
                         {
+                        
                             EndDestinationPoint();
                         }
                     }
@@ -133,14 +144,5 @@ public class BoidModule : UnitModule
         }
     }
 
-    void ManageDistanceJobsResults()
-    { 
-        for (int i = 0; i < 3; i++)
-        {
-         
-          
-            Unit.Results.UnitsResults.Remove(Unit.Results.UnitsResults[_indicesResults[i]]);
-            _indicesResults[i] = -1;
-        }
-    }
+  
 }

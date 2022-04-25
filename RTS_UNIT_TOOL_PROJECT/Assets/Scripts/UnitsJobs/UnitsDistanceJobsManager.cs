@@ -103,8 +103,8 @@ _unitsAtDistanceDatas.Dispose();
             }
             if (inDistanceArray[i])
             {
-                
-                DistanceUnitsData[maxCount].Unit.Results.UnitsResults[DistanceUnitsData[maxCount].Index].Add(_unitsMovment[i]);
+                DistanceUnitsData[maxCount].Unit.Results.UnitsResults[DistanceUnitsData[maxCount].Index].Units.Add(_unitsMovment[i]);
+                DistanceUnitsData[maxCount].Unit.Results.UnitsResults[DistanceUnitsData[maxCount].Index].IsResult = true;
             }
         }
     }

@@ -101,7 +101,7 @@ public class UnitScript : MonoBehaviour
         {
             Modules[i].OnUpdate();  
         }
-        
+        Results.UnitsResults.Clear();
         
     }
 }

@@ -34,7 +34,6 @@ public class MapManager : MonoBehaviour
             AllTerrains[i].Terrain.transform.position = pos;
             AllTerrains[i].SizeYTerrain = AllTerrains[i].YMaxPosition - AllTerrains[i].YPosition;
             float currentDistanceToCamera = AllTerrains[i].YPosition - Camera.main.transform.position.y;
-            Debug.Log(currentDistanceToCamera);
             if (currentDistanceToCamera >= CameraRayLength)
             CameraRayLength = currentDistanceToCamera;
         }

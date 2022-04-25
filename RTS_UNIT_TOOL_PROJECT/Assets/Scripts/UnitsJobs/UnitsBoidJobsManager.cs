@@ -96,7 +96,11 @@ public class UnitsBoidJobsManager : MonoBehaviour
             _handle = _getCohesionMovment.Schedule(BoidsData.Count, jobSize);
             _handle.Complete();
             for (int i = 0; i < _getCohesionMovment.MovmentsArray.Length; i++)
-            _velocity[i] += _getCohesionMovment.MovmentsArray[i].Base.ResultVector;
+            {
+                   _velocity[i] += _getCohesionMovment.MovmentsArray[i].Base.ResultVector;
+                
+            }
+         
             _allUnitsCohesion.Dispose();
             
         }
@@ -122,8 +126,8 @@ public class UnitsBoidJobsManager : MonoBehaviour
         if (_allUnits[2].Count != 0)
         {
             NativeArray<float3> _allUnitsAvoidance = new NativeArray<float3>(_allUnits[2].Count, Allocator.TempJob);
-            for (int i = 0; i < _allUnits[1].Count; i++)
-                _allUnitsAvoidance[i] = _allUnits[1][i];
+            for (int i = 0; i < _allUnits[2].Count; i++)
+                _allUnitsAvoidance[i] = _allUnits[2][i];
             GetAvoidanceMovment _getAvoidanceMovment = new GetAvoidanceMovment()
             {
                 MovmentsArray = _avoidanceMovments, UnitsPosition = _allUnitsAvoidance,
@@ -132,7 +136,11 @@ public class UnitsBoidJobsManager : MonoBehaviour
             _handle = _getAvoidanceMovment.Schedule(BoidsData.Count, jobSize);
             _handle.Complete();
             for (int i = 0; i < _getAvoidanceMovment.MovmentsArray.Length; i++)
-                _velocity[i] += _getAvoidanceMovment.MovmentsArray[i].Base.ResultVector;
+            {
+                    _velocity[i] += _getAvoidanceMovment.MovmentsArray[i].Base.ResultVector;
+                          
+            }
+            
             _allUnitsAvoidance.Dispose();
         }
 
@@ -142,6 +150,7 @@ public class UnitsBoidJobsManager : MonoBehaviour
 
         for (int i = 0; i < BoidsData.Count; i++)
         {
+
             BoidsData[i].Unit.Agent.Move(_velocity[i]*Time.deltaTime);
             BoidsData[i].Unit.transform.forward += (Vector3) _torque[i] * Time.deltaTime;
         }
@@ -181,10 +190,13 @@ public class UnitsBoidJobsManager : MonoBehaviour
 
             if (movment.Base.ResultVector.Equals(float3.zero))
                 return;
-            
-            movment.Base.ResultVector /= MinMaxIndices[index].MaxIndex - 1 - MinMaxIndices[index].MinIndex;
+       
+            movment.Base.ResultVector /= MinMaxIndices[index].MaxIndex  - MinMaxIndices[index].MinIndex;
+           movment.Base.ResultVector =  Vector3.Lerp(movment.Position, movment.Base.ResultVector, 0.5f);
             movment.Base.ResultVector -= movment.Position;
+            movment.Base.ResultVector =  Vector3.Normalize(movment.Base.ResultVector);
             movment.Base.ResultVector *= movment.Base.Speed;
+          
             MovmentsArray[index] = movment;
         }
     }
@@ -225,12 +237,13 @@ public class UnitsBoidJobsManager : MonoBehaviour
         {
             UnitsBoidJobsData.Movment movment = MovmentsArray[index];
             for (int i = MinMaxIndices[index].MinIndex; i < MinMaxIndices[index].MaxIndex; i++)
-                movment.Base.ResultVector += UnitsPosition[i];
+                movment.Base.ResultVector += movment.Position-UnitsPosition[i];
             if (movment.Base.ResultVector.Equals(float3.zero))
                 return;
-            
-            movment.Base.ResultVector /= MinMaxIndices[index].MaxIndex - MinMaxIndices[index].MinIndex;
-            movment.Base.ResultVector -= movment.Position;
+           
+            movment.Base.ResultVector /= MinMaxIndices[index].MaxIndex - MinMaxIndices[index].MinIndex; 
+        
+          movment.Base.ResultVector =  Vector3.Normalize(movment.Base.ResultVector);
             movment.Base.ResultVector *= movment.Base.Speed;
             MovmentsArray[index] = movment;
         }

@@ -115,5 +115,10 @@ public class Squad : MonoBehaviour
             }
         }
     }
+
+    public void EndDestinationPoint()
+    {
+        
+    }
 }
 

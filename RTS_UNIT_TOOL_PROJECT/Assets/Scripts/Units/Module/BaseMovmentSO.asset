@@ -36,15 +36,26 @@ MonoBehaviour:
     Speed: 4
   _avoidanceParameter:
     Distance:
-      Base: 3
+      Base: 2.5
       DistanceJob:
-        Square: 9
+        Square: 6.25
         LinesCell:
-          x: 1
+          x: 0
           y: 1
-          z: 1
-        Area: 27
-    Speed: 3
+          z: 0
+        Area: 3
+    Speed: 11.26
+  SpeedDestination: 5
+  DistanceUnitEndDestination:
+    Base: 0
+    DistanceJob:
+      Square: 0
+      LinesCell:
+        x: 0
+        y: 0
+        z: 0
+      Area: 1
+  DistanceEndDestination: 2.5
   AllDistanceCellsClass:
   - Base: 5
     DistanceJob:
@@ -62,15 +73,23 @@ MonoBehaviour:
         y: 2
         z: 1
       Area: 45
-  - Base: 3
+  - Base: 2.5
     DistanceJob:
-      Square: 9
+      Square: 6.25
       LinesCell:
-        x: 1
+        x: 0
         y: 1
-        z: 1
-      Area: 27
+        z: 0
+      Area: 3
+  - Base: 0
+    DistanceJob:
+      Square: 0
+      LinesCell:
+        x: 0
+        y: 0
+        z: 0
+      Area: 1
   AllSpeeds:
   - 5
   - 4
-  - 3
+  - 11.26
