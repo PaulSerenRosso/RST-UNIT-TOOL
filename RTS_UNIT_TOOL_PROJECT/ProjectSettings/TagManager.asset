@@ -6,6 +6,9 @@ TagManager:
   tags:
   - Unit
   - Squad
+  - Land
+  - Sky
+  - UnderGround
   layers:
   - Default
   - TransparentFX
@@ -15,9 +18,9 @@ TagManager:
   - UI
   - Unit
   - Squad
-  - 
-  - 
-  - 
+  - Land
+  - Sky
+  - UnderGround
   - 
   - 
   - 

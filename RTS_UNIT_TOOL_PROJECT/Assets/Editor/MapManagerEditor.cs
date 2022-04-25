@@ -1,12 +1,7 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
-using UnityEditor.AI;
 using UnityEngine;
-using UnityEngine.AI;
 using NavMeshBuilder = UnityEditor.AI.NavMeshBuilder;
-using Object = UnityEngine.Object;
 
 [CustomEditor(typeof(MapManager))]
 public class MapManagerEditor : Editor
@@ -15,6 +10,14 @@ public class MapManagerEditor : Editor
     private void OnEnable()
     {
         _mapManager =(MapManager) target;
+        if(_mapManager.UnderSkyMaterial != null)
+        _mapManager.UnderSkyMaterial.color = new Color(1, 1, 1, 0.25f);
+    }
+
+    private void OnDisable()
+    {
+        if(_mapManager.UnderSkyMaterial != null)
+        _mapManager.UnderSkyMaterial.color = new Color(0, 0, 0, 0);
     }
 
     public override void OnInspectorGUI()

@@ -23,6 +23,25 @@ public class PlayerManagerEditor : Editor
             if(_playerManager.AllTypesPlayer.Count != 0)
             EnumCreator.WritePlayerType(_playerManager.AllTypesPlayer);
         }
+
+        if (GUILayout.Button("Update Material on Units"))
+        {
+            for (int i = 0; i < _playerManager.AllPlayersList.Count; i++)
+            {
+                for (int j = 0; j < _playerManager.AllPlayersList[i].AllSquads.Count; j++)
+                {
+                    for (int k = 0; k < _playerManager.AllPlayersList[i].AllSquads[j].AllUnits.Count; k++)
+                    {
+                        for (int l = 0; l < _playerManager.AllPlayersList[i].AllSquads[j].AllUnits[k].Units.Count; l++)
+                        {
+                        Debug.Log(i);
+                        _playerManager.AllPlayersList[i].AllSquads[j].AllUnits[k].Units[l].GetComponent<MeshRenderer>().material = _playerManager.AllPlayersList[i].Material;
+                            
+                        }
+                    }
+                }
+            }
+        }
         
     }
 }

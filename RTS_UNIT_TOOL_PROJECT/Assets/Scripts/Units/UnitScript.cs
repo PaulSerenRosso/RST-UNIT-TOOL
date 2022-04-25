@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Networking;
@@ -8,82 +9,99 @@ public class UnitScript : MonoBehaviour
 {
     public GridCell Cell;
     public Squad Squad;
-    public UnitModuleManager ModuleManager;
+    public List<UnitModule> Modules;
     public UnitMovmentType MovmentType;
-    public bool isMove;
     public NavMeshAgent Agent;
     public int MovementCellIndexList;
     public UnitJobsResults Results;
+    public bool IsMove;
+    public bool CanMove;
+  public  BoidModule Boid;
+  public int DestinationIndex;
 
-    public DistanceCellsClass testDistance;
-  public  List<int> test = new List<int>();
-  public int index;
-  [SerializeField]
-  private bool testst; 
+    
+    
+    public bool
+        ReachedPoint;
+    public bool DestinationIsPoint;
+    public bool DestinationIsUnit;
+    
+
+
+
+ 
+    
     private void OnValidate()
+    {
+        if (Results == null)
+            TryGetComponent(out Results);
+        
+        Modules.Clear();
+        UnitModule[] modules = GetComponents<UnitModule>();
+        Modules.AddRange(modules);
+        if (GetComponent<BoidModule>())
+        {
+           CanMove = true; 
+        }
+        else
+        {
+            CanMove = false;
+        }
+    }
+
+
+
+    private void Start()
     {
         switch (MovmentType)
         {
             case UnitMovmentType.Aerial:
             {
-                Agent.areaMask = 8;
+                Agent.areaMask = MapManager.Instance.AllTerrains[0].NavArea;
                 break;
             }
             case UnitMovmentType.Earthly:
             {
-                Agent.areaMask = 32;
+                Agent.areaMask = MapManager.Instance.AllTerrains[1].NavArea;
                 break;
             }
             case UnitMovmentType.Underground:
             {
-                Agent.areaMask = 16;
+                Agent.areaMask = MapManager.Instance.AllTerrains[2].NavArea;
                 break;
             }
         }
-
-        if (Results == null) 
-            TryGetComponent<UnitJobsResults>(out Results);
-
-    
-        testDistance.ConvertDistanceToDistanceCell(FindObjectOfType<GridManager>());
     }
-    public void OnDrawGizmos()
-        {
-            Gizmos.color = Color.black;
-            Gizmos.DrawWireSphere(transform.position,testDistance.Base);
-        }
+
     public void OnStart()
     {
-        ModuleManager.OnStart();
+        Boid.OnStart();
+        for (int i = 0; i < Modules.Count; i++)
+        {
+           Modules[i].OnStart();  
+        }
+      
     }
 
     public void AskUpdate()
     {
-        if (!testst)
+        Boid.AskUpdate();
+        for (int i = 0; i < Modules.Count; i++)
         {
-            Results.AskDistanceUnit(this,testDistance.DistanceJob,test, out int newIndex);
-            index = newIndex;
-            testst = true;
+            Modules[i].AskUpdate();  
         }
-           
-        ModuleManager.AskUpdate();
     }
+
     public void OnUpdate()
     {
-        Debug.Log(index +"" + Results.UnitsResults[index].Count);
-    
-        ModuleManager.OnUpdate();
-        
-       
-            for (int i = 0; i <Results.UnitsResults[index].Count ; i++)
-            {
-                Debug.Log("base"+Cell.ID);
-                Debug.Log(Results.UnitsResults[index][i].Cell.ID);
-            }
-            testst = false;
-              Results.UnitsResults.Clear();
+        //  Debug.Log(index +"" + Results.UnitsResults[index].Count);
+
+        Boid.OnUpdate();
+        for (int i = 0; i < Modules.Count; i++)
+        {
+            Modules[i].OnUpdate();  
+        }
         
         
-      
     }
 }

@@ -20,5 +20,8 @@ public class testAgent : MonoBehaviour
 
     }
 
-  
+    private void Update()
+    {
+        Debug.Log(agent.destination);
+    }
 }

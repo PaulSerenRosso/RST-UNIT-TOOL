@@ -14,12 +14,11 @@ GameObject:
   - component: {fileID: 4309606450532485256}
   - component: {fileID: 4853734262114477457}
   - component: {fileID: 1195411354725273818}
-  - component: {fileID: 1102673392102294158}
   - component: {fileID: 6300885469562255532}
   - component: {fileID: 1394009640275617974}
   - component: {fileID: 8462544396134821503}
-  m_Layer: 0
-  m_Name: Unit
+  m_Layer: 6
+  m_Name: LandUnit
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -66,7 +65,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 1ec2e3c442cccfe46b712d66f0bbb2fa, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -136,24 +135,19 @@ MonoBehaviour:
       z: 0
     Color: {r: 1, g: 1, b: 0.09392524, a: 0.92156863}
   Squad: {fileID: 0}
-  ModuleManager: {fileID: 1102673392102294158}
+  Modules:
+  - {fileID: 6300885469562255532}
   MovmentType: 1
-  isMove: 0
   Agent: {fileID: 8462544396134821503}
   MovementCellIndexList: 0
   Results: {fileID: 1195411354725273818}
-  testDistance:
-    Base: 10
-    DistanceJob:
-      Square: 100
-      LinesCell:
-        x: 2
-        y: 4
-        z: 2
-      Area: 225
-  test: 01000000
-  index: 0
-  testst: 0
+  IsMove: 0
+  CanMove: 1
+  Boid: {fileID: 6300885469562255532}
+  DestinationIndex: 0
+  ReachedPoint: 0
+  DestinationIsPoint: 0
+  DestinationIsUnit: 0
 --- !u!114 &1195411354725273818
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -166,22 +160,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f78bc0ac2d6621945b439e16f531de58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &1102673392102294158
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5264829477169092233}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 31ebc3f78b389dd4fa4e4994e2248f73, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  AllModules: []
-  CurrentModules: []
-  StartModules: []
-  EndModules: []
 --- !u!114 &6300885469562255532
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -194,6 +172,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e6a4e0e6b67e2741a711d13238d1df9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Unit: {fileID: 4853734262114477457}
+  _boidSO: {fileID: 11400000, guid: b20bc090e30f1204bbecfc6c3015b69c, type: 2}
 --- !u!114 &1394009640275617974
 MonoBehaviour:
   m_ObjectHideFlags: 0

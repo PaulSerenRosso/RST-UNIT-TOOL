@@ -43,10 +43,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d4f2d91f695b934e88ff84744e4fd96, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  AllUnits:
-  - {fileID: 0}
+  SpawnAreasSize: []
+  AllUnits: []
   SpawnerUnits: []
   IsSelected: 0
-  Target: {fileID: 0}
-  Destination: 0
+  TargetSquad: {fileID: 0}
   Player: 0
+  Destinations: []
+  TargetUnit: {fileID: 0}
