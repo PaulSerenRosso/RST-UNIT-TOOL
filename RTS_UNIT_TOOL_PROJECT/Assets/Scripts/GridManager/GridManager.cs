@@ -14,7 +14,14 @@ public float3 SizeCells;
   [SerializeField] public float3 SizeGrid;
    public int3 CellFactor;
    
-  
+   public static GridManager Instance;
+   void Awake()
+   {
+      if (Instance != null && Instance != this)
+         Destroy(gameObject);    // Suppression d'une instance précédente (sécurité...sécurité...)
+ 
+      Instance = this;
+   }
    private void OnDrawGizmosSelected()
    {
       Gizmos.color = Color.green;

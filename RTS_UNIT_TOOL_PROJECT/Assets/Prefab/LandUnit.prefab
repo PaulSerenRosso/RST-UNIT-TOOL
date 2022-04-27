@@ -136,8 +136,7 @@ MonoBehaviour:
       z: 0
     Color: {r: 1, g: 1, b: 0.09392524, a: 0.92156863}
   Squad: {fileID: 0}
-  Modules:
-  - {fileID: 6300885469562255532}
+  Modules: []
   MovmentType: 1
   Agent: {fileID: 8462544396134821503}
   MovementCellIndexList: 0
@@ -176,6 +175,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Unit: {fileID: 4853734262114477457}
   _boidSO: {fileID: 11400000, guid: b20bc090e30f1204bbecfc6c3015b69c, type: 2}
+  _indicesResults: ffffffffffffffffffffffffffffffff
 --- !u!114 &1394009640275617974
 MonoBehaviour:
   m_ObjectHideFlags: 0

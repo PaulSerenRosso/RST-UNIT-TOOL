@@ -9,7 +9,7 @@ public class BoidModule : UnitModule
     [SerializeField] private BoidSO _boidSO;
     private List<int> _movmentTypeIndices = new List<int>();
 
-    private int[] _indicesResults = new int[4]
+public int[] _indicesResults = new int[4]
     {
         -1, -1, -1,-1
     };
@@ -60,6 +60,7 @@ public class BoidModule : UnitModule
             {
                 Unit.Results.AskDistanceUnit(Unit, _boidSO.AllDistanceCellsClass[i].DistanceJob, _movmentTypeIndices,
                     out _indicesResults[i]);
+                Debug.Log(_indicesResults[i]);
            
             }
         }
@@ -83,9 +84,13 @@ public class BoidModule : UnitModule
         for (int i = 0; i < 3; i++)
         {
        
+            Debug.Log(Unit.Results.UnitsResults[_indicesResults[i]].Units.Count);
             List<Transform> _currentUnitsTransform = new List<Transform>();
             for (int j = 0; j < Unit.Results.UnitsResults[_indicesResults[i]].Units.Count; j++)
             {
+              Debug.Log(Unit.Cell.ID +""+ Unit.Results.UnitsResults[_indicesResults[i]].Units[j].Cell.ID);
+
+              Debug.Log(i+"     "+  Vector3.Distance(Unit.Results.UnitsResults[_indicesResults[i]].Units[j].transform.position, transform.position));
                 _currentUnitsTransform.Add(Unit.Results.UnitsResults[_indicesResults[i]].Units[j].transform);
             }
 
@@ -116,9 +121,10 @@ public class BoidModule : UnitModule
         {
             if (!Unit.Squad.Destinations[Unit.DestinationIndex].FirstUnitReachedDestination)
             {
-                Debug.Log(Unit.Agent.remainingDistance);
-                if (Unit.Agent.remainingDistance <= _boidSO.DistanceEndDestination)
+            
+                if (!Unit.Agent.pathPending && Unit.Agent.remainingDistance <= _boidSO.DistanceEndDestination)
                 {
+                    Debug.Log(Unit.Agent.remainingDistance+ "  "+_boidSO.DistanceEndDestination+"  "+Unit.Cell.ID+"bonsoir");
                     EndDestinationPoint();
                     Unit.Squad.Destinations[Unit.DestinationIndex].FirstUnitReachedDestination = true; 
                 }
@@ -127,12 +133,12 @@ public class BoidModule : UnitModule
             {
                 for (int i = 0; i < _endDestinationUnits.Count; i++)
                 {
-                    Debug.Log(_endDestinationUnits[i].name);
+          
                     if (_endDestinationUnits[i].Squad == Unit.Squad)
                     {
                         if (!_endDestinationUnits[i].DestinationIsPoint)
                         {
-                        
+                            Debug.Log(Unit.Cell.ID+"bonjour");
                             EndDestinationPoint();
                         }
                     }

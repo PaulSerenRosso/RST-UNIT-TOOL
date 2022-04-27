@@ -22,7 +22,7 @@ MonoBehaviour:
           y: 2
           z: 1
         Area: 45
-    Speed: 5
+    Speed: 1
   _alignementParameter:
     Distance:
       Base: 4
@@ -33,7 +33,7 @@ MonoBehaviour:
           y: 2
           z: 1
         Area: 45
-    Speed: 4
+    Speed: 1
   _avoidanceParameter:
     Distance:
       Base: 2.5
@@ -44,7 +44,7 @@ MonoBehaviour:
           y: 1
           z: 0
         Area: 3
-    Speed: 11.26
+    Speed: 1
   SpeedDestination: 5
   DistanceUnitEndDestination:
     Base: 0
@@ -90,6 +90,6 @@ MonoBehaviour:
         z: 0
       Area: 1
   AllSpeeds:
-  - 5
-  - 4
-  - 11.26
+  - 1
+  - 1
+  - 1

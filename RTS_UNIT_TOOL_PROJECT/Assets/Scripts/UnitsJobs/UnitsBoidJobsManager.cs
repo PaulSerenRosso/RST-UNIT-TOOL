@@ -85,6 +85,7 @@ public class UnitsBoidJobsManager : MonoBehaviour
         float3[] _torque = new float3[BoidsData.Count];
         if (_allUnits[0].Count != 0)
         {
+            Debug.Log(_allUnits[0].Count);
             NativeArray<float3> _allUnitsCohesion = new NativeArray<float3>(_allUnits[0].Count, Allocator.TempJob);
             for (int i = 0; i < _allUnits[0].Count; i++)
                 _allUnitsCohesion[i] = _allUnits[0][i];
@@ -113,7 +114,7 @@ public class UnitsBoidJobsManager : MonoBehaviour
             GetAlignementRotation _getAlignementRotation = new GetAlignementRotation()
             {
                 AlignementArray = _alignementRotation, UnitsRotationForward = _allUnitsAlignement,
-                MinMaxIndices = _minMaxIndicesAvoidance
+                MinMaxIndices = _minMaxIndicesAlignement
             };
             _handle = _getAlignementRotation.Schedule(BoidsData.Count, jobSize);
             _handle.Complete();
@@ -188,11 +189,12 @@ public class UnitsBoidJobsManager : MonoBehaviour
             for (int i = MinMaxIndices[index].MinIndex; i < MinMaxIndices[index].MaxIndex; i++)
                 movment.Base.ResultVector += UnitsPosition[i];
 
+            print(movment.Base.ResultVector);
             if (movment.Base.ResultVector.Equals(float3.zero))
                 return;
        
             movment.Base.ResultVector /= MinMaxIndices[index].MaxIndex  - MinMaxIndices[index].MinIndex;
-           movment.Base.ResultVector =  Vector3.Lerp(movment.Position, movment.Base.ResultVector, 0.5f);
+      //     movment.Base.ResultVector =  Vector3.Lerp(movment.Position, movment.Base.ResultVector, 0.5f);
             movment.Base.ResultVector -= movment.Position;
             movment.Base.ResultVector =  Vector3.Normalize(movment.Base.ResultVector);
             movment.Base.ResultVector *= movment.Base.Speed;

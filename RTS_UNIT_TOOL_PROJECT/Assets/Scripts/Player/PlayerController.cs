@@ -122,6 +122,7 @@ public class PlayerController : MonoBehaviour
 
     void Deselect(InputAction.CallbackContext context)
     {
+        if(!_isSelect ) return;
         _isSelect = false;
         _squadSelected.TargetSquad = null;
         _squadSelected.Destinations.Clear();

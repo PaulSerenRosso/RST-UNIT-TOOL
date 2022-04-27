@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2642916264634946765}
-  - component: {fileID: 3121839875817649754}
+  - component: {fileID: 1526500376017523275}
   m_Layer: 7
   m_Name: Squad
   m_TagString: Squad
@@ -31,7 +31,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 2.76, z: 0}
---- !u!114 &3121839875817649754
+--- !u!114 &1526500376017523275
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -46,8 +46,8 @@ MonoBehaviour:
   SpawnAreasSize: []
   AllUnits: []
   SpawnerUnits: []
-  IsSelected: 0
+  TargetUnit: {fileID: 0}
   TargetSquad: {fileID: 0}
   Player: 0
   Destinations: []
-  TargetUnit: {fileID: 0}
+  movmentTypeUnitsIndex: 

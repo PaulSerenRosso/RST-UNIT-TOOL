@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Codice.Client.BaseCommands;
 using Unity.Mathematics;
 using UnityEditor;
@@ -26,7 +27,7 @@ public class SquadEditor : Editor
             MapManager map = FindObjectOfType<MapManager>();
             GridManager grid = FindObjectOfType<GridManager>();
 
-            DestroyOldUnits();
+            DestroyOldUnits(grid);
             InstantiateNewUnits();
             SetUnitsVariables(map, grid);
             EditorUtility.SetDirty(target);
@@ -83,7 +84,7 @@ public class SquadEditor : Editor
      
     }
 
-    void DestroyOldUnits()
+    void DestroyOldUnits(GridManager gridManager)
     {
         for (int j = 0; j < _squad.AllUnits.Count; j++)
         {
@@ -95,7 +96,8 @@ public class SquadEditor : Editor
                 Debug.Log("test");
                 Transform unitTransform = _squad.transform.GetChild(i);
                 UnitScript unitScript = unitTransform.GetComponent<UnitScript>();
-                unitScript.Cell.AllUnits[unitScript.MovementCellIndexList].Units.Remove(unitScript);
+                gridManager.Grid[unitScript.Cell.ID].AllUnits[unitScript.MovementCellIndexList].Units.Remove(unitScript);
+              
                 DestroyImmediate(unitTransform.gameObject);
             }
         }
@@ -158,7 +160,7 @@ public class SquadEditor : Editor
         Debug.Log(map.AllTerrains[(int) unitScript.MovmentType]);
         Vector2 randomPosition = Random.insideUnitCircle * _squad.SpawnAreasSize[(int) unitScript.MovmentType];
         unitScript.transform.position = new Vector3(unitScript.transform.position.x + randomPosition.x,
-            map.AllTerrains[(int) unitScript.MovmentType].Terrain.transform.position.y,
+            unitScript.transform.position.y,
             unitScript.transform.position.z + randomPosition.y);
 
         unitScript.Squad = _squad;

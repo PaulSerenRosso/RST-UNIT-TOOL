@@ -9,7 +9,7 @@ using UnityEngine;
 
 public class SquadManager : MonoBehaviour
 {
-    [SerializeField] private GridManager _gridManager;
+
     public List<Squad> AllSquads;
     public List<string> AllTypesUnit;
     public List<UnitScript> AllUnits = new List<UnitScript>();
@@ -80,7 +80,7 @@ public class SquadManager : MonoBehaviour
          var _updateUnitCellData = new NativeArray<UpdateUnitCellData>(_currentUnitsMove.Count, Allocator.TempJob);
          for (int i = 0; i < _currentUnitsMove.Count; i++)
                 {
-                    _updateUnitCellData[i] = new UpdateUnitCellData(_currentUnitsMove[i].Cell,_currentUnitsMove[i], _gridManager);
+                    _updateUnitCellData[i] = new UpdateUnitCellData(_currentUnitsMove[i].Cell,_currentUnitsMove[i], GridManager.Instance);
                 }
                 UpdateUnitCellJob _updateUnitCell = new UpdateUnitCellJob
                 {
@@ -106,8 +106,8 @@ public class SquadManager : MonoBehaviour
                  _currentUnitsMove[i].Cell.AllUnits[RemoveIndex].Units.Remove(_currentUnitsMove[i]);
                  Debug.Log("test");
             }
-               
-            _currentUnitsMove[i].Cell = _gridManager.Grid[updateUnitCellJob.AllData[i].CurrentId];
+
+            _currentUnitsMove[i].Cell = GridManager.Instance.Grid[updateUnitCellJob.AllData[i].CurrentId];
             if (_currentUnitsMove[i].Cell.TryGetIndexList(_currentUnitsMove[i].MovmentType, out int AddIndex))
                 _currentUnitsMove[i].Cell.AllUnits[AddIndex].Units.Add(_currentUnitsMove[i]);
             _currentUnitsMove[i].MovementCellIndexList = AddIndex;
