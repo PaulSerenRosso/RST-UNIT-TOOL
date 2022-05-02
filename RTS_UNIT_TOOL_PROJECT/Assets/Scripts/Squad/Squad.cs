@@ -79,13 +79,15 @@ public class Squad : MonoBehaviour
         {
             for (int j = 0; j < AllUnits[i].Units.Count; j++)
             {
-                if(!AllUnits[i].Units[j].CanMove)
-                    continue;
+              
                 AllUnits[i].Units[j].IsMove = true;
                 AllUnits[i].Units[j].DestinationIsUnit = true;
                 for (int k = 0; k < destinationSquadList.Count; k++)
                 {
                     AllUnits[i].Units[j].DestinationIndex = k; 
+                    AllUnits[i].Units[j].Agent.speed = AllUnits[i].Units[j].SO.DestinationPointSpeed;
+                    AllUnits[i].Units[j].Agent.angularSpeed = AllUnits[i].Units[j].SO.DestinationPointRotationSpeed;
+                    AllUnits[i].Units[j].IsEngage = false;
                 }
             }
         }
@@ -94,21 +96,23 @@ public class Squad : MonoBehaviour
     public void SetPointDestination(List<DestinationSquad> destinationSquadList)
     {
         Destinations = destinationSquadList;
+        
         for (int i = 0; i < AllUnits.Count; i++)
         {
             for (int j = 0; j < AllUnits[i].Units.Count; j++)
             {
-                if(!AllUnits[i].Units[j].CanMove)
-                    continue;
                 for (int k = 0; k < destinationSquadList.Count; k++)
                 {
-                    if (destinationSquadList[k].IndexMovment == (int) AllUnits[i].MovmentType)
+                    if (Destinations[k].IndexMovment == (int) AllUnits[i].MovmentType)
                     {
                         AllUnits[i].Units[j].Agent.SetDestination(destinationSquadList[k].Position);
                         AllUnits[i].Units[j].IsMove = true;
-                        Debug.Log(AllUnits[i].Units[j].name);
+//                        Debug.Log(AllUnits[i].Units[j].name);
                         AllUnits[i].Units[j].DestinationIsPoint = true;
-                        AllUnits[i].Units[j].DestinationIndex = k; 
+                        AllUnits[i].Units[j].DestinationIndex = k;
+                        AllUnits[i].Units[j].Agent.speed = AllUnits[i].Units[j].SO.DestinationPointSpeed;
+                        AllUnits[i].Units[j].Agent.angularSpeed = AllUnits[i].Units[j].SO.DestinationPointRotationSpeed;
+                        AllUnits[i].Units[j].IsEngage = false;
                         break;
                     }
                 }

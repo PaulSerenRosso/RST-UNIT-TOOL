@@ -6,10 +6,7 @@ using UnityEngine.AI;
 
 public class BoidModule : UnitModule
 {
-    [SerializeField] private BoidSO _boidSO;
-    private List<int> _movmentTypeIndices = new List<int>();
-
-public int[] _indicesResults = new int[4]
+    public int[] _indicesResults = new int[4]
     {
         -1, -1, -1,-1
     };
@@ -28,25 +25,19 @@ public int[] _indicesResults = new int[4]
     // end destination
     void OnDrawGizmosSelected()
     {
-        if(_boidSO == null)
+        if(Unit.SO == null)
             return;
         Gizmos.color = Color.magenta;
-        Gizmos.DrawWireSphere(transform.position, _boidSO.AllDistanceCellsClass[0].Base);
+        Gizmos.DrawWireSphere(transform.position, Unit.SO.AllDistanceCellsClass[0].Base);
         Gizmos.color = Color.black;
-        Gizmos.DrawWireSphere(transform.position, _boidSO.AllDistanceCellsClass[1].Base);
+        Gizmos.DrawWireSphere(transform.position, Unit.SO.AllDistanceCellsClass[1].Base);
         Gizmos.color = Color.red + Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, _boidSO.AllDistanceCellsClass[2].Base);
+        Gizmos.DrawWireSphere(transform.position, Unit.SO.AllDistanceCellsClass[2].Base);
         Gizmos.color = Color.blue;
-        Gizmos.DrawWireSphere(transform.position, _boidSO.AllDistanceCellsClass[3].Base);
+        Gizmos.DrawWireSphere(transform.position, Unit.SO.AllDistanceCellsClass[3].Base);
     }
 
-    public override void OnValidate()
-    {
-        base.OnValidate();
-        if (_movmentTypeIndices.Count == 0)
-            _movmentTypeIndices.Add((int) Unit.MovmentType);
-   
-    }
+
 
     public override void OnStart()
     {
@@ -54,13 +45,13 @@ public int[] _indicesResults = new int[4]
 
     public override void AskUpdate()
     {
-        if (Unit.IsMove)
+        if (Unit.IsMove && !Unit.IsEngage)
         {
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 3; i++)
             {
-                Unit.Results.AskDistanceUnit(Unit, _boidSO.AllDistanceCellsClass[i].DistanceJob, _movmentTypeIndices,
+                Unit.DistanceUnitsResults.AskDistanceUnit(Unit, Unit.SO.AllDistanceCellsClass[i].DistanceJob, Unit.SO.MovmentTypeList,
                     out _indicesResults[i]);
-                Debug.Log(_indicesResults[i]);
+//                Debug.Log(_indicesResults[i]);
            
             }
         }
@@ -84,14 +75,15 @@ public int[] _indicesResults = new int[4]
         for (int i = 0; i < 3; i++)
         {
        
-            Debug.Log(Unit.Results.UnitsResults[_indicesResults[i]].Units.Count);
+///            Debug.Log(Unit.Results.UnitsResults[_indicesResults[i]].Units.Count);
             List<Transform> _currentUnitsTransform = new List<Transform>();
-            for (int j = 0; j < Unit.Results.UnitsResults[_indicesResults[i]].Units.Count; j++)
+            for (int j = 0; j < Unit.DistanceUnitsResults.UnitsResults[_indicesResults[i]].Units.Count; j++)
             {
-              Debug.Log(Unit.Cell.ID +""+ Unit.Results.UnitsResults[_indicesResults[i]].Units[j].Cell.ID);
+             //Debug.Log(i+" cellid"+Unit.Cell.ID +"     "+ Unit.Results.UnitsResults[_indicesResults[i]].Units[j].Cell.ID);
 
-              Debug.Log(i+"     "+  Vector3.Distance(Unit.Results.UnitsResults[_indicesResults[i]].Units[j].transform.position, transform.position));
-                _currentUnitsTransform.Add(Unit.Results.UnitsResults[_indicesResults[i]].Units[j].transform);
+//          Debug.Log( i+ ""+Unit.Cell.ID+"     "+ Unit.Results.UnitsResults[_indicesResults[i]].Units[j].Cell.ID+"     "+  Vector3.Distance(Unit.Results.UnitsResults[_indicesResults[i]].Units[j].transform.position, transform.position));
+               if(Unit.DistanceUnitsResults.UnitsResults[_indicesResults[i]].Units[j].Squad == Unit.Squad && !Unit.DistanceUnitsResults.UnitsResults[_indicesResults[i]].Units[j].IsDead)
+                _currentUnitsTransform.Add(Unit.DistanceUnitsResults.UnitsResults[_indicesResults[i]].Units[j].transform);
             }
 
             _unitsTransform.Add(_currentUnitsTransform);
@@ -99,7 +91,7 @@ public int[] _indicesResults = new int[4]
 
         UnitsBoidJobsData.UnitsBoidJobsClass _unitsBoidJobsClass = new UnitsBoidJobsData.UnitsBoidJobsClass()
         {
-            Speeds = _boidSO.AllSpeeds, Unit = Unit, UnitsTransform = _unitsTransform
+            Speeds = Unit.SO.AllSpeeds, Unit = Unit, UnitsTransform = _unitsTransform
         };
         UnitsBoidJobsManager.Instance.BoidsData.Add(_unitsBoidJobsClass);
     }
@@ -107,30 +99,31 @@ public int[] _indicesResults = new int[4]
     void EndDestinationPoint()
     {
         Unit.DestinationIsPoint = false;
-        Unit.Squad.Destinations[Unit.DestinationIndex].FirstUnitReachedDestination = false;
+        Unit.Squad.Destinations[Unit.DestinationIndex].FirstUnitReachedDestination = true;
         Unit.IsMove = false;
+        Unit.Agent.SetDestination(transform.position);
         Unit.Squad.EndDestinationPoint();
     }
 
     void CheckDestinationUnit()
     {
         List<UnitScript> _endDestinationUnits = new List<UnitScript>();
-        _endDestinationUnits.AddRange(Unit.Results.UnitsResults[_indicesResults[3]].Units);
+        _endDestinationUnits.AddRange(Unit.DistanceUnitsResults.UnitsResults[_indicesResults[2]].Units);
 
         if (Unit.DestinationIsPoint)
         {
             if (!Unit.Squad.Destinations[Unit.DestinationIndex].FirstUnitReachedDestination)
             {
             
-                if (!Unit.Agent.pathPending && Unit.Agent.remainingDistance <= _boidSO.DistanceEndDestination)
+                if (!Unit.Agent.pathPending && Unit.Agent.remainingDistance <= Unit.SO.AllDistanceCellsClass[2].Base)
                 {
-                    Debug.Log(Unit.Agent.remainingDistance+ "  "+_boidSO.DistanceEndDestination+"  "+Unit.Cell.ID+"bonsoir");
                     EndDestinationPoint();
                     Unit.Squad.Destinations[Unit.DestinationIndex].FirstUnitReachedDestination = true; 
                 }
             }
             else
             {
+               Debug.Log(_endDestinationUnits.Count); 
                 for (int i = 0; i < _endDestinationUnits.Count; i++)
                 {
           
@@ -145,9 +138,7 @@ public int[] _indicesResults = new int[4]
                 }
             }
         }
-        else if (Unit.DestinationIsUnit)
-        {
-        }
+    
     }
 
   

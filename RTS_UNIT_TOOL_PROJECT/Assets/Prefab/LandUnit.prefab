@@ -113,6 +113,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4d4f407c3365b948a4562e6fd4520c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  SO: {fileID: 11400000, guid: 9292d1100fe02f449b96e3412e197b74, type: 2}
   Cell:
     ID: 0
     MinPosition:
@@ -137,12 +138,10 @@ MonoBehaviour:
     Color: {r: 1, g: 1, b: 0.09392524, a: 0.92156863}
   Squad: {fileID: 0}
   Modules: []
-  MovmentType: 1
   Agent: {fileID: 8462544396134821503}
   MovementCellIndexList: 0
   Results: {fileID: 1195411354725273818}
   IsMove: 0
-  CanMove: 1
   Boid: {fileID: 6300885469562255532}
   DestinationIndex: 0
   ReachedPoint: 0
@@ -174,7 +173,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Unit: {fileID: 4853734262114477457}
-  _boidSO: {fileID: 11400000, guid: b20bc090e30f1204bbecfc6c3015b69c, type: 2}
   _indicesResults: ffffffffffffffffffffffffffffffff
 --- !u!114 &1394009640275617974
 MonoBehaviour:
@@ -270,7 +268,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 6d197faf958d4754da7649a8fc24fd83, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

@@ -114,12 +114,12 @@ public class SquadEditor : Editor
         for (int i = 0; i < _squad.SpawnerUnits.Count; i++)
         {
             UnitScript unitPrefab = _squad.SpawnerUnits[i].unitObject.GetComponent<UnitScript>();
-            if(!_squad.movmentTypeUnitsIndex.Contains((int) unitPrefab.MovmentType))
+            if(!_squad.movmentTypeUnitsIndex.Contains((int) unitPrefab.SO.MovmentType))
             { 
-                _squad.movmentTypeUnitsIndex.Add((int)unitPrefab.MovmentType);
+                _squad.movmentTypeUnitsIndex.Add((int)unitPrefab.SO.MovmentType);
                 UnitMovmentList _unitList = new UnitMovmentList();
                 _unitList.Units = new List<UnitScript>();
-                _unitList.MovmentType = unitPrefab.MovmentType;
+                _unitList.MovmentType = unitPrefab.SO.MovmentType;
                 _squad.AllUnits.Add(_unitList);
             }
            
@@ -129,7 +129,7 @@ public class SquadEditor : Editor
                     (GameObject) PrefabUtility.InstantiatePrefab(_squad.SpawnerUnits[i].unitObject, _squad.transform);
                 for (int k = 0; k < _squad.AllUnits.Count; k++)
                 {
-                    if (_squad.AllUnits[i].MovmentType == unitPrefab.MovmentType)
+                    if (_squad.AllUnits[i].MovmentType == unitPrefab.SO.MovmentType)
                     {
                         _squad.AllUnits[i].Units.Add(unit.GetComponent<UnitScript>()); 
                         break;
@@ -156,9 +156,9 @@ public class SquadEditor : Editor
 
     void SetUnitPosition(UnitScript unitScript, MapManager map)
     {
-        Debug.Log((int) unitScript.MovmentType);
-        Debug.Log(map.AllTerrains[(int) unitScript.MovmentType]);
-        Vector2 randomPosition = Random.insideUnitCircle * _squad.SpawnAreasSize[(int) unitScript.MovmentType];
+        Debug.Log((int) unitScript.SO.MovmentType);
+        Debug.Log(map.AllTerrains[(int) unitScript.SO.MovmentType]);
+        Vector2 randomPosition = Random.insideUnitCircle * _squad.SpawnAreasSize[(int) unitScript.SO.MovmentType];
         unitScript.transform.position = new Vector3(unitScript.transform.position.x + randomPosition.x,
             unitScript.transform.position.y,
             unitScript.transform.position.z + randomPosition.y);
@@ -182,7 +182,7 @@ public class SquadEditor : Editor
         Debug.Log(idCell);
         unitScript.Cell = grid.Grid[idCell];
 
-        if (unitScript.Cell.TryGetIndexList(unitScript.MovmentType, out int index))
+        if (unitScript.Cell.TryGetIndexList(unitScript.SO.MovmentType, out int index))
         {
             if (unitScript.Cell.AllUnits[index].Units == null)
                 unitScript.Cell.AllUnits[index].Units = new List<UnitScript>();

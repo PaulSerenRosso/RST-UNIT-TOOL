@@ -13,7 +13,7 @@ public class MapManager : MonoBehaviour
    public TerrainData BaseData;
    [SerializeField] private float _detectDistanceNavMeshPoint;
 
-   public float CameraRayLength;
+
        public static MapManager Instance { get; private set; }
  
        void Awake()
@@ -33,9 +33,7 @@ public class MapManager : MonoBehaviour
             Vector3 pos = new Vector3(AllTerrains[i].Terrain.transform.position.x,AllTerrains[i].YPosition ,AllTerrains[i].Terrain.transform.position.z) ;
             AllTerrains[i].Terrain.transform.position = pos;
             AllTerrains[i].SizeYTerrain = AllTerrains[i].YMaxPosition - AllTerrains[i].YPosition;
-            float currentDistanceToCamera = AllTerrains[i].YPosition - Camera.main.transform.position.y;
-            if (currentDistanceToCamera >= CameraRayLength)
-            CameraRayLength = currentDistanceToCamera;
+       
         }
     }
 

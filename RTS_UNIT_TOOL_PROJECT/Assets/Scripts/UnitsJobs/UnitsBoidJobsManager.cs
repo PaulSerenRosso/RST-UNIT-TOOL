@@ -85,7 +85,7 @@ public class UnitsBoidJobsManager : MonoBehaviour
         float3[] _torque = new float3[BoidsData.Count];
         if (_allUnits[0].Count != 0)
         {
-            Debug.Log(_allUnits[0].Count);
+//            Debug.Log(_allUnits[0].Count);
             NativeArray<float3> _allUnitsCohesion = new NativeArray<float3>(_allUnits[0].Count, Allocator.TempJob);
             for (int i = 0; i < _allUnits[0].Count; i++)
                 _allUnitsCohesion[i] = _allUnits[0][i];
@@ -153,7 +153,7 @@ public class UnitsBoidJobsManager : MonoBehaviour
         {
 
             BoidsData[i].Unit.Agent.Move(_velocity[i]*Time.deltaTime);
-            BoidsData[i].Unit.transform.forward += (Vector3) _torque[i] * Time.deltaTime;
+          BoidsData[i].Unit.transform.forward += (Vector3) _torque[i] * Time.deltaTime;
         }
         #endregion
 
@@ -189,7 +189,7 @@ public class UnitsBoidJobsManager : MonoBehaviour
             for (int i = MinMaxIndices[index].MinIndex; i < MinMaxIndices[index].MaxIndex; i++)
                 movment.Base.ResultVector += UnitsPosition[i];
 
-            print(movment.Base.ResultVector);
+//            print(movment.Base.ResultVector);
             if (movment.Base.ResultVector.Equals(float3.zero))
                 return;
        

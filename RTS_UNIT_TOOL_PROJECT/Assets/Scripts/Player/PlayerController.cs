@@ -9,7 +9,7 @@ public class PlayerController : MonoBehaviour
     private RaycastHit _hit;
     [SerializeField] private LayerMask _maskSquad;
     [SerializeField] private LayerMask _maskTarget;
-
+    [SerializeField] private float _distanceRay;
     [SerializeField] float _moveSpeed;
 
     [SerializeField] private float _borderMoveThickness;
@@ -19,7 +19,7 @@ public class PlayerController : MonoBehaviour
     public InputMaster Master;
 
     private TerrainData a;
-
+    private Ray ray;
     private bool _isSelect;
     private bool _inInputSelect;
     private Squad _squadSelected;
@@ -45,10 +45,10 @@ public class PlayerController : MonoBehaviour
         int moveHeight = 0;
         int moveWidth = 0;
 
-        if (Input.mousePosition.y >= Screen.height - _borderMoveThickness) moveHeight = 1;
-        else if (Input.mousePosition.y <= _borderMoveThickness) moveHeight = -1;
-        if (Input.mousePosition.x >= Screen.width - _borderMoveThickness) moveWidth = 1;
-        else if (Input.mousePosition.x <= _borderMoveThickness) moveWidth = -1;
+        if (Input.mousePosition.y >= Screen.height - _borderMoveThickness && Input.mousePosition.y <= Screen.height) moveHeight = 1;
+        else if (Input.mousePosition.y <= _borderMoveThickness && Input.mousePosition.y >= 0) moveHeight = -1;
+        if (Input.mousePosition.x >= Screen.width - _borderMoveThickness  && Input.mousePosition.y <= Screen.width) moveWidth = 1;
+        else if (Input.mousePosition.x <= _borderMoveThickness && Input.mousePosition.x >= 0) moveWidth = -1;
         if (moveHeight == 0 && moveWidth == 0)
             return;
 
@@ -72,12 +72,13 @@ public class PlayerController : MonoBehaviour
     {
         if (_inInputSelect && hasRelease)
         {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            Debug.Log("testtt");
+        ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             
             
             if (_isSelect )
             {
-                if (Physics.Raycast(ray, out _hit, MapManager.Instance.CameraRayLength, _maskTarget))
+                if (Physics.Raycast(ray, out _hit, _distanceRay, _maskTarget))
                 {
                     if (_hit.collider.CompareTag("Unit"))
                     {
@@ -89,13 +90,14 @@ public class PlayerController : MonoBehaviour
                         }
                     }
                     else
-                    { _squadSelected.SetPointDestination(GetDestinationsPosition(_hit.point, _squadSelected.movmentTypeUnitsIndex));
+                    { Debug.Log("bouboubobu"); _squadSelected.SetPointDestination(GetDestinationsPosition(_hit.point, _squadSelected.movmentTypeUnitsIndex));
                     }
                 }
+
             }
             else
             {
-                if (Physics.Raycast(ray, out _hit, MapManager.Instance.CameraRayLength, _maskSquad))
+                if (Physics.Raycast(ray, out _hit, _distanceRay, _maskSquad))
                 {
                     Debug.Log(_hit.collider.gameObject.name);
                     UnitScript unit = _hit.collider.GetComponent<UnitScript>();
@@ -106,6 +108,7 @@ public class PlayerController : MonoBehaviour
                 }
             }    hasRelease = false;
         }
+                Debug.DrawRay(ray.origin, ray.direction*_distanceRay);
     }
 
     void Select(InputAction.CallbackContext context)

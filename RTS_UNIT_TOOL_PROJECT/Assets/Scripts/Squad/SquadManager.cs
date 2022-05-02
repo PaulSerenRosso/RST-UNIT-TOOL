@@ -6,10 +6,12 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class SquadManager : MonoBehaviour
 {
 
+    public List<UnitScript> DeadUnits; 
     public List<Squad> AllSquads;
     public List<string> AllTypesUnit;
     public List<UnitScript> AllUnits = new List<UnitScript>();
@@ -50,16 +52,44 @@ public class SquadManager : MonoBehaviour
         }
     }
 
+    void DestroyDeadUnit()
+    {
+        int j = 0;
+        for (int i = DeadUnits.Count - 1; i > -1; i--, j++)
+        {
+            DeadUnits[i].Cell.AllUnits[DeadUnits[i].MovementCellIndexList].Units.Remove(DeadUnits[i]);
+            for (int k = 0; k < DeadUnits[i].Squad.AllUnits.Count; k++)
+            {
+                if (DeadUnits[i].Squad.AllUnits[k].MovmentType == DeadUnits[i].SO.MovmentType)
+                {
+                       DeadUnits[i].Squad.AllUnits[k].Units.Remove(DeadUnits[i]);
+                       if (DeadUnits[i].Squad.AllUnits[k].Units.Count == 0)
+                           DeadUnits[i].Squad.AllUnits.Remove(DeadUnits[i].Squad.AllUnits[k]);
+                       if (DeadUnits[i].Squad.AllUnits.Count == 0)
+                       {
+                            AllSquads.Remove(DeadUnits[i].Squad);
+                            PlayerManager.Instance.AllPlayers[DeadUnits[i].Squad.Player].AllSquads
+                                .Remove(DeadUnits[i].Squad);
+                            Destroy(DeadUnits[i].Squad.gameObject, Time.deltaTime * j);
+                       }
+                       break; 
+                }
+                 
+            }
+            AllUnits.Remove(DeadUnits[i]);
+            Destroy(DeadUnits[i].gameObject, Time.deltaTime * j);
+        }
+    }
+
     private void Update()
     { 
-   
-        // update la destruction d'unité sur le maintread
+        DestroyDeadUnit();
      UpdateUnitCell();
      for (int i = 0; i < AllUnits.Count; i++)
      {
         AllUnits[i].AskUpdate();
      }
-    UnitsDistanceJobsManager.Instance.OnUpdate();    
+    DistanceUnitsJobsManager.Instance.OnUpdate();    
      for (int i = 0; i < AllSquads.Count; i++)
      {
          AllSquads[i].OnUpdate();
@@ -72,7 +102,7 @@ public class SquadManager : MonoBehaviour
         _currentUnitsMove.Clear();
          for (int i = 0; i < AllUnits.Count; i++)
          {
-             if(AllUnits[i].IsMove && AllUnits[i].CanMove)
+             if(AllUnits[i].IsMove)
                  _currentUnitsMove.Add(AllUnits[i]);
          }
          if(_currentUnitsMove.Count == 0)
@@ -101,14 +131,14 @@ public class SquadManager : MonoBehaviour
                 continue;
             if(_currentUnitsMove[i].Cell.ID == updateUnitCellJob.AllData[i].CurrentId )
                 continue;
-            if (_currentUnitsMove[i].Cell.TryGetIndexList(_currentUnitsMove[i].MovmentType, out int RemoveIndex))
+            if (_currentUnitsMove[i].Cell.TryGetIndexList(_currentUnitsMove[i].SO.MovmentType, out int RemoveIndex))
             {
                  _currentUnitsMove[i].Cell.AllUnits[RemoveIndex].Units.Remove(_currentUnitsMove[i]);
                  Debug.Log("test");
             }
 
             _currentUnitsMove[i].Cell = GridManager.Instance.Grid[updateUnitCellJob.AllData[i].CurrentId];
-            if (_currentUnitsMove[i].Cell.TryGetIndexList(_currentUnitsMove[i].MovmentType, out int AddIndex))
+            if (_currentUnitsMove[i].Cell.TryGetIndexList(_currentUnitsMove[i].SO.MovmentType, out int AddIndex))
                 _currentUnitsMove[i].Cell.AllUnits[AddIndex].Units.Add(_currentUnitsMove[i]);
             _currentUnitsMove[i].MovementCellIndexList = AddIndex;
         }

@@ -6,23 +6,25 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
+using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.Jobs;
 using UnityEngine.Rendering;
 
-public class UnitsDistanceJobsManager : MonoBehaviour
+public class DistanceUnitsJobsManager : MonoBehaviour
 {
     [SerializeField] private GridManager _gridManager;
-    public List<UnitDistanceJobData.UnitsDistanceClass> DistanceUnitsData;
+    public List<DistanceUnitsJobData.UnitsDistanceClass> DistanceUnitsData;
     List<UnitScript> _unitsMovment = new List<UnitScript>();
     [SerializeField] private int _jobSizeNeighbours;
     [SerializeField] private int _jobSizeDistance;
-    public static UnitsDistanceJobsManager Instance;
+    public static DistanceUnitsJobsManager Instance;
+
     void Awake()
     {
         if (Instance != null && Instance != this)
-            Destroy(gameObject);    // Suppression d'une instance précédente (sécurité...sécurité...)
- 
+            Destroy(gameObject); // Suppression d'une instance précédente (sécurité...sécurité...)
+
         Instance = this;
     }
 
@@ -37,7 +39,7 @@ public class UnitsDistanceJobsManager : MonoBehaviour
         JobHandle _handle = new JobHandle();
         _unitsMovment.Clear();
 
-        SetNeighboursCellJob(out NativeArray<UnitDistanceJobData.NeighbourCells> _neighboursCellDatas);
+        SetNeighboursCellJob(out NativeArray<DistanceUnitsJobData.NeighbourCells> _neighboursCellDatas);
         int neighboursCellIDCount = 0;
         NativeArray<int> _cellIDMinCounts = new NativeArray<int>(DistanceUnitsData.Count, Allocator.TempJob);
         for (int i = 0; i < DistanceUnitsData.Count; i++)
@@ -67,11 +69,11 @@ public class UnitsDistanceJobsManager : MonoBehaviour
 
         NativeArray<MinMaxIndex> _minMaxCountUnits;
         NativeArray<float3> _unitsPosition;
-        GetUnitsWithMovmentType(_finalNeighbourCellsID, out _unitsMovment, out _unitsPosition, out _minMaxCountUnits);
-        NativeArray<bool> _inDistanceArray = new NativeArray<bool>(_unitsPosition.Length, Allocator.TempJob);
-        NativeArray<UnitDistanceJobData.UnitsAtDistance> _unitsAtDistanceDatas;
-        SetUnitsAtDistanceJob(out _unitsAtDistanceDatas);
-
+        NativeArray<DistanceUnitsJobData.UnitsAtDistance> _unitsAtDistanceDatas;
+        List<DistanceUnitsJobData.Base> _unitsAtDistanceBaseDatas;
+        GetUnitsWithMovmentType(_finalNeighbourCellsID, out _unitsMovment, out _unitsPosition, out _minMaxCountUnits, out _unitsAtDistanceDatas, out _unitsAtDistanceBaseDatas );
+        NativeArray<CheckUnitAtDistance> _inDistanceArray = new NativeArray<CheckUnitAtDistance>(_unitsPosition.Length, Allocator.TempJob);
+        
         GetUnitsAtDistanceJob _getUnitsAtDistanceJob = new GetUnitsAtDistanceJob()
         {
             AllDatas = _unitsAtDistanceDatas,
@@ -79,48 +81,60 @@ public class UnitsDistanceJobsManager : MonoBehaviour
             InDistanceArray = _inDistanceArray,
             MinMaxIndexArray = _minMaxCountUnits,
         };
-        _handle = _getUnitsAtDistanceJob.Schedule(DistanceUnitsData.Count, _jobSizeDistance);
+        _handle = _getUnitsAtDistanceJob.Schedule(_unitsAtDistanceDatas.Length, _jobSizeDistance);
         _handle.Complete();
-       
 
-GetUnitsAtDistance(_inDistanceArray, _minMaxCountUnits); 
-_unitsAtDistanceDatas.Dispose();
+
+        GetUnitsAtDistance(_unitsAtDistanceBaseDatas, _inDistanceArray, _minMaxCountUnits);
+        _unitsAtDistanceDatas.Dispose();
         _minMaxCountUnits.Dispose();
         _inDistanceArray.Dispose();
         _unitsPosition.Dispose();
         DistanceUnitsData.Clear();
     }
 
-    void GetUnitsAtDistance(NativeArray<bool> inDistanceArray, NativeArray<MinMaxIndex> minMaxIndices)
+    void GetUnitsAtDistance(List<DistanceUnitsJobData.Base> baseDatas,  NativeArray<CheckUnitAtDistance> inDistanceArray, NativeArray<MinMaxIndex> minMaxIndices)
     {
-       
         int maxCount = 0;
+            
         for (int i = 0; i < inDistanceArray.Length; i++)
         {
+     
             if (minMaxIndices[maxCount].MaxIndex == i)
             {
                 maxCount++;
             }
-            if (inDistanceArray[i])
+
+     
+            if (inDistanceArray[i].InDistance)
             {
-                DistanceUnitsData[maxCount].Unit.Results.UnitsResults[DistanceUnitsData[maxCount].Index].Units.Add(_unitsMovment[i]);
-             
-            }   
-           
+                if (baseDatas[maxCount].WithSquareDistance)
+                {
+                    UnitWithDistanceAmount unitWithDistanceAmount = new UnitWithDistanceAmount();
+                    unitWithDistanceAmount.SquareDistance = inDistanceArray[i].SquareDistance;
+                    unitWithDistanceAmount.Unit = _unitsMovment[i];
+                    baseDatas[maxCount].Unit.DistanceUnitsResults.UnitsResultAmounts[baseDatas[maxCount].Index].UnitsWithAmount.Add(unitWithDistanceAmount); 
+                }
+                else
+                {
+                    baseDatas[maxCount].Unit.DistanceUnitsResults.UnitsResults[baseDatas[maxCount].Index].Units
+                        .Add(_unitsMovment[i]);
+                }
+             ;
+            }
         }
 
         for (int i = 0; i < DistanceUnitsData.Count; i++)
         {
-            DistanceUnitsData[i].Unit.Results.UnitsResults[DistanceUnitsData[i].Index].IsResult = true;
-            
+            DistanceUnitsData[i].Unit.DistanceUnitsResults.UnitsResults[DistanceUnitsData[i].Index].IsResult = true;
         }
     }
 
-    void GetNeighboursCells(GetNeighboursCellJob getNeighboursCellJob, out List<List<int>> finalNeighbourCellsID)
+    void GetNeighboursCells( GetNeighboursCellJob getNeighboursCellJob, out List<List<int>> finalNeighbourCellsID)
     {
         finalNeighbourCellsID = new List<List<int>>();
 
-    
+
         int w = -1;
         int j = 0;
         for (int i = 0; i < getNeighboursCellJob.NeighbourCellsID.Length; i++)
@@ -145,18 +159,23 @@ _unitsAtDistanceDatas.Dispose();
 
     private void GetUnitsWithMovmentType(List<List<int>> NeighbourCellsID,
         out List<UnitScript> unitsMovment, out NativeArray<float3> unitsPosition,
-        out NativeArray<MinMaxIndex> minCountUnits)
+        out NativeArray<MinMaxIndex> minCountUnits,
+        out NativeArray<DistanceUnitsJobData.UnitsAtDistance> unitsAtDistanceDatas, out List<DistanceUnitsJobData.Base> baseDatas)
     {
         
+        List<MinMaxIndex> minMaxIndicesList = new List<MinMaxIndex>();
         unitsMovment = new List<UnitScript>();
         List<float3> unitsPositionList = new List<float3>();
         List<UnitScript> unitCellsAdd = new List<UnitScript>();
-        minCountUnits = new NativeArray<MinMaxIndex>(DistanceUnitsData.Count, Allocator.TempJob);
+        List<DistanceUnitsJobData.UnitsAtDistance> currentUnitsAtDistance =
+            new List<DistanceUnitsJobData.UnitsAtDistance>();
+        baseDatas = new List<DistanceUnitsJobData.Base>();
         for (int i = 0; i < DistanceUnitsData.Count; i++)
         {
-            MinMaxIndex _currentMinMaxIndex = minCountUnits[i];
-           
-                       _currentMinMaxIndex.MinIndex = unitsPositionList.Count;
+            MinMaxIndex _currentMinMaxIndex = new MinMaxIndex();
+
+            _currentMinMaxIndex.MinIndex = unitsPositionList.Count;
+
             
             for (int j = 0; j < DistanceUnitsData[i].TypeMovmentUnit.Count; j++)
             {
@@ -169,85 +188,75 @@ _unitsAtDistanceDatas.Dispose();
                     {
                         if (DistanceUnitsData[i].TypeMovmentUnit[j] == (int) _allUnits[l].MovmentType)
                         {
-                          
                             for (int m = 0; m < _allUnits[l].Units.Count; m++)
                             {
-                                if(_allUnits[l].Units[m] == DistanceUnitsData[i].Unit || unitCellsAdd.Contains(_allUnits[l].Units[m]) )
+                                if (_allUnits[l].Units[m] == DistanceUnitsData[i].Unit ||
+                                    unitCellsAdd.Contains(_allUnits[l].Units[m]) )
                                     continue;
                                 
-                               Debug.Log(_allUnits[l].Units[m]);
-                                    unitsMovment.Add(_allUnits[l].Units[m]);
-                                    unitCellsAdd.Add(_allUnits[l].Units[m]);
+                                unitsMovment.Add(_allUnits[l].Units[m]);
+                                unitCellsAdd.Add(_allUnits[l].Units[m]);
+                         //       Debug.Log(DistanceUnitsData[i].Index + "   "+ DistanceUnitsData[i].Unit.Cell.ID +"   "+ _allUnits[l].Units[m].Cell.ID + "distance "+Vector3.Distance(DistanceUnitsData[i].Unit.transform.position,_allUnits[l].Units[m].transform.position ));
                                 unitsPositionList.Add(_allUnits[l].Units[m].transform.position);
                             }
                         }
-                    
-                    }  
-                   
-                    
+                    }
+
+
                     unitCellsAdd.Clear();
                 }
             }
-            
-        
+
             _currentMinMaxIndex.MaxIndex = unitsPositionList.Count;
-            minCountUnits[i] = _currentMinMaxIndex;
-        
-       
-            
+            if (_currentMinMaxIndex.MaxIndex !=_currentMinMaxIndex.MinIndex )
+            {
+                minMaxIndicesList.Add(_currentMinMaxIndex);
+                DistanceUnitsJobData.UnitsAtDistance unitsAtDistance =
+                    new DistanceUnitsJobData.UnitsAtDistance(DistanceUnitsData[i].DistanceCheck.Square,
+                        DistanceUnitsData[i].BaseUnitPosition, DistanceUnitsData[i].WithSquareDistance );
+                currentUnitsAtDistance.Add(unitsAtDistance);
+                DistanceUnitsJobData.Base currentBase = new DistanceUnitsJobData.Base();
+                currentBase.Index = DistanceUnitsData[i].Index;
+                currentBase.Unit = DistanceUnitsData[i].Unit;
+                baseDatas.Add(currentBase);
+            }
         }
 
-        for (int i = 0; i < DistanceUnitsData[i].TypeMovmentUnit.Count; i++)
+        unitsAtDistanceDatas =
+            new NativeArray<DistanceUnitsJobData.UnitsAtDistance>(currentUnitsAtDistance.Count, Allocator.TempJob);
+        minCountUnits = new NativeArray<MinMaxIndex>(currentUnitsAtDistance.Count, Allocator.TempJob);
+        for (int i = 0; i < currentUnitsAtDistance.Count; i++)
         {
-            Debug.Log(i + DistanceUnitsData[i].BaseUnitID + "   " + DistanceUnitsData[i].TypeMovmentUnit[i]);
+            unitsAtDistanceDatas[i] = currentUnitsAtDistance[i];
+            minCountUnits[i] = minMaxIndicesList[i];
         }
-
-        for (int j = 0; j < DistanceUnitsData.Count; j++)
-                    {
-                        
-                        for (int k = minCountUnits[j].MinIndex; k < minCountUnits[j].MaxIndex; k++)
-                        {
-                            Debug.Log(j +"   "+DistanceUnitsData[j].BaseUnitID+"    " + "" +
-                                      unitsMovment[k].Cell.ID);
-                        }
-                      }
         
-unitsPosition = new NativeArray<float3>(unitsPositionList.Count, Allocator.TempJob);
-for (int i = 0; i < unitsPositionList.Count; i++)
-{
-    unitsPosition[i] = unitsPositionList[i];
-}
+        
+        unitsPosition = new NativeArray<float3>(unitsPositionList.Count, Allocator.TempJob);
+        for (int i = 0; i < unitsPositionList.Count; i++)
+        {
+            unitsPosition[i] = unitsPositionList[i];
+        }
     }
 
-    private void SetNeighboursCellJob(out NativeArray<UnitDistanceJobData.NeighbourCells> neighboursCellDatas)
+    private void SetNeighboursCellJob(out NativeArray<DistanceUnitsJobData.NeighbourCells> neighboursCellDatas)
     {
         neighboursCellDatas =
-            new NativeArray<UnitDistanceJobData.NeighbourCells>(DistanceUnitsData.Count, Allocator.TempJob);
-        
+            new NativeArray<DistanceUnitsJobData.NeighbourCells>(DistanceUnitsData.Count, Allocator.TempJob);
+
         for (int i = 0; i < DistanceUnitsData.Count; i++)
         {
-            neighboursCellDatas[i] = new UnitDistanceJobData.NeighbourCells(
+            neighboursCellDatas[i] = new DistanceUnitsJobData.NeighbourCells(
                 DistanceUnitsData[i].DistanceCheck.LinesCell,
                 DistanceUnitsData[i].BaseUnitID, DistanceUnitsData[i].LinesPosition);
         }
     }
 
-    private void SetUnitsAtDistanceJob(out NativeArray<UnitDistanceJobData.UnitsAtDistance> unitsAtDistanceDatas)
-    {
-        unitsAtDistanceDatas =
-            new NativeArray<UnitDistanceJobData.UnitsAtDistance>(DistanceUnitsData.Count, Allocator.TempJob);
-        for (int i = 0; i < DistanceUnitsData.Count; i++)
-        {
-            unitsAtDistanceDatas[i]
-                 = new UnitDistanceJobData.UnitsAtDistance(DistanceUnitsData[i].DistanceCheck.Square, DistanceUnitsData[i].BaseUnitPosition);
-        }
-    }
 
     [BurstCompile]
     public struct GetNeighboursCellJob : IJobParallelFor
     {
-        [ReadOnly]
-        public NativeArray<UnitDistanceJobData.NeighbourCells> AllDatas;
+        [ReadOnly] public NativeArray<DistanceUnitsJobData.NeighbourCells> AllDatas;
         [ReadOnly] public int3 GridFactors;
         [ReadOnly] public int3 GridLinesCount;
 
@@ -316,32 +325,35 @@ for (int i = 0; i < unitsPositionList.Count; i++)
     [BurstCompile]
     public struct GetUnitsAtDistanceJob : IJobParallelFor
     {
-        [ReadOnly]
-        public NativeArray<UnitDistanceJobData.UnitsAtDistance> AllDatas;
-        [ReadOnly]
-        public NativeArray<float3> UnitsPosition;
-        [NativeDisableParallelForRestriction]
-        [WriteOnly]
-        public NativeArray<bool> InDistanceArray;
-        [ReadOnly]
-        public NativeArray<MinMaxIndex> MinMaxIndexArray;
+        [ReadOnly] public NativeArray<DistanceUnitsJobData.UnitsAtDistance> AllDatas;
+        [ReadOnly] public NativeArray<float3> UnitsPosition;
+
+        [NativeDisableParallelForRestriction] [WriteOnly]
+        public NativeArray<CheckUnitAtDistance> InDistanceArray;
+
+        [ReadOnly] public NativeArray<MinMaxIndex> MinMaxIndexArray;
 
         public void Execute(int index)
         {
-       
             var _data = AllDatas[index];
-            
+
             for (int i = MinMaxIndexArray[index].MinIndex; i < MinMaxIndexArray[index].MaxIndex; i++)
             {
-                if (Vector3.SqrMagnitude(UnitsPosition[i] - _data.BaseUnitPosition) <= _data.DistanceSquare)
+                CheckUnitAtDistance checkUnit = InDistanceArray[i]; 
+                float squareDistance = Vector3.SqrMagnitude(UnitsPosition[i] - _data.BaseUnitPosition);
+                if (squareDistance <= _data.DistanceSquare)
                 {
-                    print(Vector3.Distance(UnitsPosition[i], _data.BaseUnitPosition));
-                    InDistanceArray[i] = true;
+                    checkUnit.InDistance= true;
+                   if (_data.WithSquareDistance) checkUnit.SquareDistance = squareDistance;
                 }
-    
-            
+                InDistanceArray[i] = checkUnit;
             }
         }
     }
 
+    public struct CheckUnitAtDistance
+    {
+        public bool InDistance;
+        public float SquareDistance;
+    }
 }
