@@ -31,14 +31,18 @@ public class UnitSO : ScriptableObject
     public bool IsEngageAutomatically;
     [HideInInspector]
     public List<int> MovmentTypeIndicesDetection = new List<int>();
+
+    public bool WithStopMovment;
+    public DistanceSquare DistanceStopMovment;
     
     
     #endregion
     
     #region Targeting
 
-    [Header("Targeting")] public TargetChange Change;
-    public List<TargetPriority> TargetPriorities;
+    [Header("Targeting")] public TargetChange ChangePriority;
+    public List<TargetPriorityClass> TargetPriorities;
+
 
     #endregion
 
@@ -65,7 +69,8 @@ public class UnitSO : ScriptableObject
   
 
    public void OnValidate()
-   {   
+   {
+       
        MovmentTypeList.Clear();
        MovmentTypeList.Add((int)MovmentType);
        MovmentTypeIndicesDetection.Clear();
@@ -73,7 +78,7 @@ public class UnitSO : ScriptableObject
        {
            MovmentTypeIndicesDetection.Add((int)MovmentTypesDetection[i]);
        }
-       
+       DistanceStopMovment.BaseToSquare();
        GridManager gridManager = FindObjectOfType<GridManager>();
        DistanceAttack.BaseToSquare();
        DistanceEngagement.ConvertDistanceToDistanceCell(gridManager);

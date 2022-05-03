@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
 [Serializable]
-public class DistanceSquare: MonoBehaviour
+public class DistanceSquare
 {
    public float Base;
    public float Square;

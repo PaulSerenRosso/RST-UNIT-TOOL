@@ -12,6 +12,38 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a666604c334b4d41a1759e3f37ca580, type: 3}
   m_Name: AirUnit
   m_EditorClassIdentifier: 
+  Type: 0
+  MaxHealth: 0
+  MovmentType: 0
+  DestinationPointSpeed: 0
+  DestinationPointRotationSpeed: 0
+  DestinationFightSpeed: 0
+  DestinationFightRotationSpeed: 0
+  MovmentTypeList: 00000000
+  MovmentTypesDetection: 
+  DistanceEngagement:
+    Base: 0
+    DistanceJob:
+      Square: 0
+      LinesCell:
+        x: 0
+        y: 0
+        z: 0
+      Area: 1
+  IsEngageAutomatically: 0
+  MovmentTypeIndicesDetection: 
+  WithStopMovment: 0
+  DistanceStopMovment:
+    Base: 0
+    Square: 0
+  ChangePriority: 0
+  TargetPriorities: []
+  MinDamage: 0
+  MaxDamage: 0
+  CooldownAttack: 0
+  DistanceAttack:
+    Base: 0
+    Square: 0
   _cohesionParameter:
     Distance:
       Base: 10
@@ -45,17 +77,6 @@ MonoBehaviour:
           z: 1
         Area: 45
     Speed: 5
-  SpeedDestination: 0
-  DistanceUnitEndDestination:
-    Base: 0
-    DistanceJob:
-      Square: 0
-      LinesCell:
-        x: 0
-        y: 0
-        z: 0
-      Area: 1
-  DistanceEndDestination: 2.5
   AllDistanceCellsClass:
   - Base: 10
     DistanceJob:

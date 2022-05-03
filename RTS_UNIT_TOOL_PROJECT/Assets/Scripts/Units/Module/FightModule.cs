@@ -9,10 +9,16 @@ public class FightModule : UnitModule
 
     [SerializeField] private int indexAttackDetection;
 
-    public UnitScript EngagedUnit;
+    public UnitScript TargetUnit;
     private bool _attackIsReady;
     private float _timerAttack;
     public List<UnitsFightJobsData.UnitWithDistance> AttackUnitsList;
+    bool _engagedUnitInEngageRange = false;
+    bool _hasGetUnitsAttackRange = false;
+    List<UnitWithDistanceAmount> _targetUnits = new List<UnitWithDistanceAmount>();
+    private List<UnitWithDistanceAmount> _attackUnits = new List<UnitWithDistanceAmount>();
+    private bool _engagedUnitInAttackRange;
+    private int currentPriorityIndex = 0;
 
     private void OnDrawGizmosSelected()
     {
@@ -55,11 +61,12 @@ public class FightModule : UnitModule
         if (Unit.DestinationIsUnit ||
             !Unit.DestinationIsPoint && !Unit.DestinationIsUnit && Unit.SO.IsEngageAutomatically)
         {
-            
             if (Unit.DistanceUnitsResults.UnitsResults[indexFightDetection].Units.Count != 0)
             {
-                bool _engagedUnitInEngageRange = false;
-                List<UnitWithDistanceAmount> _targetUnits = new List<UnitWithDistanceAmount>();
+                _engagedUnitInEngageRange = false;
+                _hasGetUnitsAttackRange = false;
+                _targetUnits.Clear();
+
                 for (int i = 0;
                     i < Unit.DistanceUnitsResults.UnitsResultAmounts[indexFightDetection].UnitsWithAmount.Count;
                     i++)
@@ -68,9 +75,9 @@ public class FightModule : UnitModule
                         .DistanceUnitsResults.UnitsResultAmounts[indexFightDetection].UnitsWithAmount[i].Unit.Squad
                         .Player))
                     {
-                        if (EngagedUnit == Unit.DistanceUnitsResults.UnitsResultAmounts[indexFightDetection]
+                        if (TargetUnit == Unit.DistanceUnitsResults.UnitsResultAmounts[indexFightDetection]
                             .UnitsWithAmount[i].Unit)
-                            _engagedUnitInEngageRange = true; 
+                            _engagedUnitInEngageRange = true;
                         _targetUnits.Add(Unit.DistanceUnitsResults.UnitsResultAmounts[indexFightDetection]
                             .UnitsWithAmount[i]);
                     }
@@ -83,41 +90,147 @@ public class FightModule : UnitModule
                     Unit.Agent.angularSpeed = Unit.SO.DestinationFightRotationSpeed;
                 }
 
-                if (!_engagedUnitInEngageRange || EngagedUnit)
+                switch (Unit.SO.ChangePriority)
                 {
-                    
-                }
-                //check si la portée d'engage ou si l'unité est mort
-
-                // check si l'index 
-
-                if (Unit.SO.Change == TargetChange.MaxDistanceAttack || _attackIsReady)
-                {
-                    bool _engagedUnitInAttackRange = false;
-                    List<UnitWithDistanceAmount> _attackUnits = new List<UnitWithDistanceAmount>();
-                    for (int i = 0; i < _targetUnits.Count; i++)
+                    case TargetChange.Automatically:
                     {
-                        if (Unit.SO.DistanceAttack.Square > _targetUnits[i].SquareDistance)
+                        TargetUnit = ChangeTarget(_targetUnits);
+                        break;
+                    }
+                    case TargetChange.DeathUnit:
+                    {
+                        if (!_engagedUnitInEngageRange || !TargetUnit)
                         {
-                            _attackUnits.Add(_targetUnits[i]);
-                            if (EngagedUnit == _targetUnits[i].Unit)
-                            {
-                                _engagedUnitInAttackRange = true;
-                            }
+                            TargetUnit = ChangeTarget(_targetUnits);
                         }
+                        break;
                     }
+                    case TargetChange.MaxDistanceAttack:
+                    {
+                        _attackUnits.Clear();
+                        _engagedUnitInAttackRange = false;
+                        GetUnitsAtAttackRange(out _attackUnits);
+                        _hasGetUnitsAttackRange = true;
+                     TargetUnit = ChangeTarget(_targetUnits);
+                        break;
+                    }
+                }
+                if(Unit.SO.WithStopMovment)
+                    Debug.Log("faudra faire un truc là ");
+                // mettre le stop movment
 
-                    if (!)
+                if (_attackIsReady)
+                {
+                    if (!_hasGetUnitsAttackRange)
                     {
-                        // changement de cible
+                        _engagedUnitInAttackRange = false;
+                        _attackUnits.Clear();
+                        GetUnitsAtAttackRange(out _attackUnits);
                     }
-                    //attack 
-                    if (_attackIsReady)
-                    {
-                       
-                    }
+                    Attack();
                 }
             }
         }
+    }
+
+    void GetUnitsAtAttackRange(out List<UnitWithDistanceAmount> attackUnits)
+    {
+      
+        attackUnits = new List<UnitWithDistanceAmount>();
+        for (int i = 0; i < _targetUnits.Count; i++)
+        {
+            if (Unit.SO.DistanceAttack.Square > _targetUnits[i].SquareDistance)
+            {
+                attackUnits.Add(_targetUnits[i]);
+                if (TargetUnit == _targetUnits[i].Unit)
+                {
+                    _engagedUnitInAttackRange = true;
+                }
+            }
+        }
+
+
+    }
+
+    void Attack()
+    {
+        if (Unit.SO.ChangePriority == TargetChange.MaxDistanceAttack)
+        {
+            if (!_engagedUnitInAttackRange)
+            {
+                Attack();
+            }
+        }
+    }
+
+    UnitScript ChangeTarget(List<UnitWithDistanceAmount> units)
+    {
+        for (int i = 0; i < currentPriorityIndex + 1; i++)
+        {
+            if (CheckPriority(Unit.SO.TargetPriorities[i], units, out UnitScript _newUnitTarget))
+            {
+                return _newUnitTarget;
+            }
+        }
+        return GetCloserUnit(units);
+    }
+
+   bool CheckPriorityCondition(TargetPriorityClass targetPriorityClass,UnitWithDistanceAmount unitWithDistanceAmount )
+    {
+        switch (targetPriorityClass.Enum)
+        {
+            case TargetPriority.LessHealth:
+            {
+                if ((int) unitWithDistanceAmount.Unit.Health <= targetPriorityClass.Value)
+                    return true;
+                return false;
+      
+            }
+            case TargetPriority.SquareDistanceMin:
+            {
+                if (unitWithDistanceAmount.SquareDistance > targetPriorityClass.Value)
+                    return true;
+                return false;
+              
+            }
+            case TargetPriority.UnitType:
+            {
+                if ((int) unitWithDistanceAmount.Unit.SO.Type== targetPriorityClass.Value)
+                    return true;
+                return false;
+            }
+        }
+
+        return false;
+    }
+    public bool CheckPriority(TargetPriorityClass targetPriorityClass, List<UnitWithDistanceAmount> units,  out UnitScript targetUnit)
+    {
+        for (int i = units.Count - 1; i > -1; i++)
+        {
+            if (!CheckPriorityCondition(targetPriorityClass, units[i] ))
+            {
+                    units.Remove(units[i]);
+            }
+        }
+        if (units.Count != 0)
+        {
+            targetUnit = GetCloserUnit(units);
+            return true;
+        }
+        targetUnit = null;
+        return false;
+    }
+    
+    UnitScript GetCloserUnit(List<UnitWithDistanceAmount> Units)
+    {
+        int index = 0;
+        for (int i = 0; i < Units.Count; i++)
+        {
+            if (Units[index].SquareDistance >= Units[i].SquareDistance)
+            {
+                index = i;
+            }
+        }
+        return Units[index].Unit;
     }
 }

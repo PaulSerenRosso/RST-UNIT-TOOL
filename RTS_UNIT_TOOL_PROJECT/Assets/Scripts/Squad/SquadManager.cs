@@ -89,7 +89,8 @@ public class SquadManager : MonoBehaviour
      {
         AllUnits[i].AskUpdate();
      }
-    DistanceUnitsJobsManager.Instance.OnUpdate();    
+     DistanceUnitsJobsManager.Instance.CheckDistanceUnit();    
+    DistanceUnitsJobsManager.Instance.GetAllUnitsAtDistance();    
      for (int i = 0; i < AllSquads.Count; i++)
      {
          AllSquads[i].OnUpdate();

@@ -4,5 +4,5 @@ using UnityEngine;
 
 public enum TargetPriority
 {
-  Health, DistanceMin,Type 
+  LessHealth, SquareDistanceMin,UnitType 
 }

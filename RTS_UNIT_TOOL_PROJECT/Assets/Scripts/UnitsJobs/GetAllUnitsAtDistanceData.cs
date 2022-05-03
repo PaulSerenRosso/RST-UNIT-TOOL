@@ -6,27 +6,23 @@ using Unity.Mathematics;
 using UnityEngine;
 
 
-public class DistanceUnitsJobData
+public class GetAllUnitsAtDistanceData
 {
     [Serializable]
     public class Base
     {
-        
         public int Index;
         public UnitScript Unit;
         public bool WithSquareDistance;
-
     }
 
     // pour tout les jobs
     [Serializable]
-    public class UnitsDistanceClass : Base
+    public class DataClass : Base
     {
-        public float3 BaseUnitPosition;
-        public int BaseUnitID;
+        
         public DistanceUnitJob DistanceCheck;
         public List<int> TypeMovmentUnit;
-        public int3 LinesPosition;
         
        
 
@@ -34,11 +30,10 @@ public class DistanceUnitsJobData
         {
             Unit = unitScript;
             Index = unitScript.DistanceUnitsResults.UnitsResults.Count;
-            BaseUnitPosition = unitScript.transform.position;
-            BaseUnitID = unitScript.Cell.ID;
+ 
             DistanceCheck = distanceCheck;
             TypeMovmentUnit = movmentTypes;
-            LinesPosition = unitScript.Cell.LinesPosition;
+
             WithSquareDistance = withSquareDistance;
         }
 
