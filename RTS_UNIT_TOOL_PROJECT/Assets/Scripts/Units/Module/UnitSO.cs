@@ -32,6 +32,7 @@ public class UnitSO : ScriptableObject
     [HideInInspector]
     public List<int> MovmentTypeIndicesDetection = new List<int>();
     
+    
     #endregion
     
     #region Targeting
@@ -46,9 +47,8 @@ public class UnitSO : ScriptableObject
     [Header("Attacks")]
     public int MinDamage;
     public int MaxDamage;
-    public float DelayShoot;
+    public float CooldownAttack;
     public DistanceSquare DistanceAttack;
-    
     #endregion
 
     #region Boids 
