@@ -10,32 +10,24 @@ public class CheckDistanceUnitData
         public int Index;
         public UnitScript Unit;
         public DistanceUnitJob DistanceCheck;
+        public UnitScript CheckUnit;
+        public bool InNeighbourCells;
     }
-    
-    public struct NeighbourCells
-    {
-        public int3 DistanceLinesCell;
-        public int CheckUnitID;
-        public int3 CheckUnitLinesPosition;
-        
-        public NeighbourCells (int3 distanceIDCell,  int baseUnitID, int3 linesPosition)
-        {
-            DistanceLinesCell = distanceIDCell;
-            CheckUnitID= baseUnitID;
-            CheckUnitLinesPosition = linesPosition;
-        }
-    }
-    
     public struct UnitsAtDistance
     {
+        
         public float3 CheckUnitPosition;
-        public float DistanceSquare;
+        public float SquareDistance;
         public float3 BaseUnitPosition;
+        public bool InDistance;
+        public float SquareDistanceCheckUnit;
         public UnitsAtDistance(float distanceSquare, float3 baseUnitPosition, float3 checkUnitPosition)
         {
-            DistanceSquare = distanceSquare;
+            SquareDistance = distanceSquare;
             BaseUnitPosition = baseUnitPosition;
             CheckUnitPosition = checkUnitPosition;
+            InDistance = false;
+            SquareDistanceCheckUnit = -1;
         }
     }
     

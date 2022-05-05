@@ -22,6 +22,7 @@ public class UnitScript : MonoBehaviour
     public bool IsMove;
     public BoidModule Boid;
     public int DestinationIndex;
+    
 
     
     public bool IsDead;
@@ -128,9 +129,10 @@ public class UnitScript : MonoBehaviour
 
             for (int j = 0; j < Boid.Unit.DistanceUnitsResults.UnitsResults[Boid._indicesResults[i]].Units.Count; j++)
             {
-//                Debug.Log(j+"   "+Boid.Unit.Results.UnitsResults[Boid._indicesResults[i]].Units.Count+ "     " +Cell.ID +"     "+ Boid.Unit.Results.UnitsResults[Boid._indicesResults[i]].Units[j].Cell.ID+"  "+ Boid.Unit.Results.UnitsResults[Boid._indicesResults[i]].Units[j].MovmentType);
+//              Debug.Log(j+"   "+Boid.Unit.Results.UnitsResults[Boid._indicesResults[i]].Units.Count+ "     " +Cell.ID +"     "+ Boid.Unit.Results.UnitsResults[Boid._indicesResults[i]].Units[j].Cell.ID+"  "+ Boid.Unit.Results.UnitsResults[Boid._indicesResults[i]].Units[j].MovmentType);
             }
         }
+        
 
         Boid.OnUpdate();
         Fight.OnUpdate();
@@ -138,9 +140,10 @@ public class UnitScript : MonoBehaviour
 
         DistanceUnitsResults.UnitsResultAmounts.Clear();
         DistanceUnitsResults.UnitsResults.Clear();
+        DistanceUnitsResults.CheckDistanceUnitResults.Clear();
     }
 
-    public void TakeDamage(int amount, UnitScript unit)
+    public void TakeDamage(float amount, UnitScript unit)
     {
         Health -= amount;
         if (Health <= 0)

@@ -48,9 +48,10 @@ public class UnitSO : ScriptableObject
 
     #region Attack
 
-    [Header("Attacks")]
-    public int MinDamage;
-    public int MaxDamage;
+    [Header("Attacks")] public bool IsRandomDamage;
+    public float MinDamage;
+    public float MaxDamage;
+    public float BaseDamage;
     public float CooldownAttack;
     public DistanceSquare DistanceAttack;
     #endregion

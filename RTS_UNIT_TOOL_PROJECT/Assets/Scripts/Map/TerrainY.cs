@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Experimental.TerrainAPI;
 
@@ -13,4 +14,6 @@ public class TerrainY
   public LayerMask LayerMask;
   public float SizeYTerrain;
   public int NavArea;
+  public List<TerrainYDistance> YDistances;
+
 }

@@ -15,9 +15,15 @@ public class testAgent : MonoBehaviour
     // Update is called once per frame
     private void Start()
     {
-    agent.SetDestination(transform.position+Vector3.forward*10+Vector3.right*10);
+    agent.SetDestination(move);
     
 
+    }
+
+    void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(move, 3f);
     }
 
     private void Update()

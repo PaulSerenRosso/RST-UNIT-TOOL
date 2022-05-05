@@ -9,7 +9,7 @@ public class GridManager : MonoBehaviour
 
 public List<GridCell> Grid = new List<GridCell>();
 public int3 CellCount;
- [HideInInspector]
+
 public float3 SizeCells;
   [SerializeField] public float3 SizeGrid;
    public int3 CellFactor;

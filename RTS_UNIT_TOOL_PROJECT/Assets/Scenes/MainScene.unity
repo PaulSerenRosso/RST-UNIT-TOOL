@@ -138535,6 +138535,11 @@ MonoBehaviour:
       m_Bits: 512
     SizeYTerrain: 14.200001
     NavArea: 8
+    YDistances:
+    - Type: 1
+      YDistance: -5
+    - Type: 2
+      YDistance: -10
   - Color: {r: 0, g: 1, b: 0.09392524, a: 0.43137255}
     MovmentType: 1
     YMaxPosition: 12.94
@@ -138545,6 +138550,11 @@ MonoBehaviour:
       m_Bits: 256
     SizeYTerrain: 12.94
     NavArea: 32
+    YDistances:
+    - Type: 0
+      YDistance: 5
+    - Type: 2
+      YDistance: -5
   - Color: {r: 1, g: 0, b: 0, a: 0.49019608}
     MovmentType: 2
     YMaxPosition: 10.25
@@ -138555,6 +138565,11 @@ MonoBehaviour:
       m_Bits: 1024
     SizeYTerrain: 15.25
     NavArea: 16
+    YDistances:
+    - Type: 0
+      YDistance: 10
+    - Type: 1
+      YDistance: 5
   UnderSkyMaterial: {fileID: 2100000, guid: eab2efdf5483f9949be946dfb5822530, type: 2}
   BaseData: {fileID: 15600000, guid: 41975967967a7d947bd15c21a253433f, type: 2}
   _detectDistanceNavMeshPoint: 2
@@ -138866,6 +138881,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8462544396134821503, guid: 3a7eea94e75d86645b104edcd90525a4, type: 3}
+      propertyPath: m_Radius
+      value: 0.8
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3a7eea94e75d86645b104edcd90525a4, type: 3}
 --- !u!114 &2030013068 stripped
@@ -138946,9 +138965,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _gridManager: {fileID: 697963930}
-  DistanceUnitsData: []
+  GetUnitsData: []
   _jobSizeNeighbours: 50
   _jobSizeDistance: 50
+  _jobSizeCheckNeighbours: 0
+  _jobSizeCheckDistance: 0
 --- !u!114 &2069512366
 MonoBehaviour:
   m_ObjectHideFlags: 0

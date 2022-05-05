@@ -86,11 +86,12 @@ public class PlayerController : MonoBehaviour
                         if (PlayerManager.Instance.AllPlayers[_squadSelected.Player].EnemyPlayers
                             .Contains(unit.Squad.Player))
                         {
+                            
                             _squadSelected.SetUnitDestination(GetDestinationsPosition(_hit.point, _squadSelected.movmentTypeUnitsIndex), unit);
                         }
                     }
                     else
-                    { Debug.Log("bouboubobu"); _squadSelected.SetPointDestination(GetDestinationsPosition(_hit.point, _squadSelected.movmentTypeUnitsIndex));
+                    { Debug.Log("bouboubobu"); _squadSelected.SetPointDestination(GetDestinations(_hit.point, _squadSelected.movmentTypeUnitsIndex));
                     }
                 }
 
@@ -131,7 +132,21 @@ public class PlayerController : MonoBehaviour
         _squadSelected.Destinations.Clear();
     }
 
-    List<DestinationSquad> GetDestinationsPosition(float3 aimPosition, List<int> indices)
+    List<DestinationPosition> GetDestinationsPosition(float3 aimPosition, List<int> indices)
+    {
+        List<DestinationPosition> destinations = new List<DestinationPosition>();
+        for (int i = 0; i < indices.Count; i++)
+        {
+            if (MapManager.Instance.UpdateDestinationWithTerrainNav(aimPosition, indices[i], out NavMeshHit navMeshHit))
+            {
+                destinations.Add(new DestinationPosition(navMeshHit.position, indices[i]));
+            }
+        }
+
+        return destinations; 
+    }
+
+    List<DestinationSquad> GetDestinations(float3 aimPosition, List<int> indices)
     {
         List<DestinationSquad> destinations = new List<DestinationSquad>();
         for (int i = 0; i < indices.Count; i++)
@@ -144,4 +159,5 @@ public class PlayerController : MonoBehaviour
 
         return destinations;
     }
+ 
 }

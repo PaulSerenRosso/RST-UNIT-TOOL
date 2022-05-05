@@ -48,7 +48,6 @@ public class Squad : MonoBehaviour
 
     public void OnUpdate()
     {
-        
         for (int i = 0; i < AllUnits.Count; i++)
         {
             for (int j = 0; j < AllUnits[i].Units.Count; j++)
@@ -68,9 +67,8 @@ public class Squad : MonoBehaviour
         }
     }
 
-    public void SetUnitDestination(List<DestinationSquad> destinationSquadList, UnitScript unitTarget)
+    public void SetUnitDestination(List<DestinationPosition> destination, UnitScript unitTarget)
     {
-        Destinations = destinationSquadList;
         TargetSquad = unitTarget.Squad;
         TargetUnit = unitTarget;
 
@@ -79,15 +77,18 @@ public class Squad : MonoBehaviour
         {
             for (int j = 0; j < AllUnits[i].Units.Count; j++)
             {
-              
                 AllUnits[i].Units[j].IsMove = true;
                 AllUnits[i].Units[j].DestinationIsUnit = true;
-                for (int k = 0; k < destinationSquadList.Count; k++)
+                for (int k = 0; k < destination.Count; k++)
                 {
-                    AllUnits[i].Units[j].DestinationIndex = k; 
-                    AllUnits[i].Units[j].Agent.speed = AllUnits[i].Units[j].SO.DestinationPointSpeed;
-                    AllUnits[i].Units[j].Agent.angularSpeed = AllUnits[i].Units[j].SO.DestinationPointRotationSpeed;
-                    AllUnits[i].Units[j].IsEngage = false;
+                    if (destination[k].IndexMovment == (int) AllUnits[i].MovmentType)
+                    {
+                        AllUnits[i].Units[j].Agent.SetDestination(destination[k].Position);
+                        AllUnits[i].Units[j].Agent.speed = AllUnits[i].Units[j].SO.DestinationPointSpeed;
+                        AllUnits[i].Units[j].Agent.angularSpeed = AllUnits[i].Units[j].SO.DestinationPointRotationSpeed;
+                        AllUnits[i].Units[j].IsEngage = false;
+                        break;
+                    }
                 }
             }
         }
@@ -96,7 +97,7 @@ public class Squad : MonoBehaviour
     public void SetPointDestination(List<DestinationSquad> destinationSquadList)
     {
         Destinations = destinationSquadList;
-        
+
         for (int i = 0; i < AllUnits.Count; i++)
         {
             for (int j = 0; j < AllUnits[i].Units.Count; j++)
@@ -122,7 +123,5 @@ public class Squad : MonoBehaviour
 
     public void EndDestinationPoint()
     {
-        
     }
 }
-
