@@ -23,20 +23,20 @@ MonoBehaviour:
   BoidSmoothFactor: 0.005
   MovmentTypesDetection: 000000000100000002000000
   DistanceEngagement:
-    Base: 57.4
+    Base: 22.9
     DistanceJob:
-      Square: 3294.7603
+      Square: 524.41
       LinesCell:
-        x: 2
-        y: 18
-        z: 2
-      Area: 925
+        x: 1
+        y: 7
+        z: 1
+      Area: 135
   IsEngageAutomatically: 0
   MovmentTypeIndicesDetection: 000000000100000002000000
   WithStopMovment: 1
   DistanceStopMovment:
-    Base: 44.9
-    Square: 2016.0101
+    Base: 23
+    Square: 529
   ChangePriority: 1
   TargetPriorities:
   - Enum: 2
@@ -47,8 +47,8 @@ MonoBehaviour:
   BaseDamage: 0
   CooldownAttack: 2.5
   DistanceAttack:
-    Base: 44.35
-    Square: 1966.9224
+    Base: 22.5
+    Square: 506.25
   _cohesionParameter:
     Distance:
       Base: 7.08
