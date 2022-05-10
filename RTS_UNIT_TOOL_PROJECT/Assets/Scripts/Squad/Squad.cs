@@ -77,11 +77,20 @@ public class Squad : MonoBehaviour
 
                 if ((int) TargetUnit.SO.MovmentType == DestinationUnitList[i].IndexMovment)
                 {
+                        DestinationUnitList[i].Position = TargetUnit.transform.position;
                     for (int k = 0; k < DestinationUnitList[i].Units.Count; k++)
                     {
-                        DestinationUnitList[i].Position = TargetUnit.transform.position;
-                        DestinationUnitList[i].Units[k].Agent
-                            .SetDestination(DestinationUnitList[i].Position);
+                        try
+                        {
+                            DestinationUnitList[i].Units[k].Agent
+                                .SetDestination(DestinationUnitList[i].Position);
+                        }
+                        catch
+                        {
+                            DestinationUnitList[i].Units.Remove(DestinationUnitList[i].Units[k]);
+
+                        }
+                  
                     }
                     continue;
                 }
@@ -182,8 +191,9 @@ public class Squad : MonoBehaviour
 
     public void SetPointDestination(List<DestinationPoint> destinationSquadList)
     {
-        DestinationsPoint = destinationSquadList;
         DestinationUnitList.Clear();
+        DestinationsPoint.Clear();
+        DestinationsPoint = destinationSquadList;
         for (int i = 0; i < AllUnits.Count; i++)
         {
             for (int j = 0; j < AllUnits[i].Units.Count; j++)

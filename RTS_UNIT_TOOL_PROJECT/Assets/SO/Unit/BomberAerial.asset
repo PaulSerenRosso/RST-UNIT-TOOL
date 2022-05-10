@@ -21,22 +21,22 @@ MonoBehaviour:
   DestinationFightRotationSpeed: 300
   MovmentTypeList: 00000000
   BoidSmoothFactor: 0.005
-  MovmentTypesDetection: 0200000001000000
+  MovmentTypesDetection: 01000000
   DistanceEngagement:
-    Base: 10.28
+    Base: 17.26
     DistanceJob:
-      Square: 105.6784
+      Square: 297.9076
       LinesCell:
         x: 1
-        y: 3
+        y: 5
         z: 1
-      Area: 63
+      Area: 99
   IsEngageAutomatically: 0
-  MovmentTypeIndicesDetection: 0200000001000000
+  MovmentTypeIndicesDetection: 01000000
   WithStopMovment: 1
   DistanceStopMovment:
-    Base: 8.25
-    Square: 68.0625
+    Base: 7.7
+    Square: 59.289997
   ChangePriority: 0
   TargetPriorities:
   - Enum: 2
@@ -47,8 +47,8 @@ MonoBehaviour:
   BaseDamage: 200
   CooldownAttack: 5
   DistanceAttack:
-    Base: 9.53
-    Square: 90.82089
+    Base: 15.75
+    Square: 248.0625
   _cohesionParameter:
     Distance:
       Base: 13.79
@@ -107,7 +107,7 @@ MonoBehaviour:
         y: 2
         z: 1
       Area: 45
-  DistanceToDestinationPoint: 7.5
+  DistanceToDestinationPoint: 7.51
   AllSpeeds:
   - 5
   - 1.38

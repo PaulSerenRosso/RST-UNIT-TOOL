@@ -264,7 +264,7 @@ public class FightModule : UnitModule
 
     public bool CheckEndFight()
     {
-        if (!Unit.DestinationIsUnit || Unit.SO.IsEngageAutomatically) return true;
+        if (!Unit.DestinationIsUnit ) return true;
         return false;
     }
 
@@ -273,7 +273,7 @@ public class FightModule : UnitModule
         bool targetNull = Unit.DestinationIsUnit && !Unit.Squad.TargetUnit;
         if (targetNull)
         {
-            Unit.DestinationIsPoint = false; 
+            Unit.DestinationIsUnit = false; 
         }
         if (CheckEndFight() || targetNull)
         {

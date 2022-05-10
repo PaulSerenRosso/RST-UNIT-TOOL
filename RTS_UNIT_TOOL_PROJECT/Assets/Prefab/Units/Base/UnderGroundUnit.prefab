@@ -17,7 +17,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4853734262114477457, guid: 3a7eea94e75d86645b104edcd90525a4, type: 3}
       propertyPath: Cell.ID
-      value: 4615
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4853734262114477457, guid: 3a7eea94e75d86645b104edcd90525a4, type: 3}
       propertyPath: MovmentType

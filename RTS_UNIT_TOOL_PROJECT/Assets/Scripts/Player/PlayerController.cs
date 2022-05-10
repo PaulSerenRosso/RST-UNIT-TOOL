@@ -85,36 +85,40 @@ public class PlayerController : MonoBehaviour
             if (_isSelect)
             {
                 _hits = Physics.RaycastAll(ray, _distanceRay, _maskTarget);
-                int index = -1;
-                bool _detectUnit = false;
-                for (int i = 0; i < _hits.Length; i++)
+                if (_hits.Length != 0)
                 {
-                    if (_hits[i].collider.CompareTag("Unit"))
-                    {
-                        UnitScript unit = _hits[i].collider.GetComponent<UnitScript>();
-                        if (PlayerManager.Instance.AllPlayers[_squadSelected.Player].EnemyPlayers
-                            .Contains(unit.Squad.Player))
-                        {
-                            _squadSelected.SetUnitDestination(unit);
-                            _detectUnit = true;
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        if (index == -1)
-                            index = i;
-                    }
+                        int index = -1;
+                                    bool _detectUnit = false;
+                                    for (int i = 0; i < _hits.Length; i++)
+                                    {
+                                        if (_hits[i].collider.CompareTag("Unit"))
+                                        {
+                                            UnitScript unit = _hits[i].collider.GetComponent<UnitScript>();
+                                            if (PlayerManager.Instance.AllPlayers[_squadSelected.Player].EnemyPlayers
+                                                .Contains(unit.Squad.Player))
+                                            {
+                                                _squadSelected.SetUnitDestination(unit);
+                                                _detectUnit = true;
+                                                break;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (index == -1)
+                                                index = i;
+                                        }
+                                    }
+                                    if (!_detectUnit)
+                                    {
+                                        if (index != 1)
+                                        { 
+                                            _squadSelected.SetPointDestination(GetDestinations(_hits[index].point,
+                                                                    _squadSelected.movmentTypeUnitsIndex));
+                                        }
+                                        
+                                    }
                 }
-                if (!_detectUnit)
-                {
-                    if (index != 1)
-                    { 
-                        _squadSelected.SetPointDestination(GetDestinations(_hits[index].point,
-                                                _squadSelected.movmentTypeUnitsIndex));
-                    }
-                    
-                }
+            
             }
             else
             {

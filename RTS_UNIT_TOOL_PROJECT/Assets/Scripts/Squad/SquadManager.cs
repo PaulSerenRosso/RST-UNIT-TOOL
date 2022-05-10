@@ -1,14 +1,14 @@
-using System;
+
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
+
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
-using UnityEditor;
+
 using UnityEngine;
-using UnityEngine.Profiling;
-using UnityEngine.UI;
+
 
 public class SquadManager : MonoBehaviour
 {
@@ -16,7 +16,7 @@ public class SquadManager : MonoBehaviour
     public List<UnitScript> DeadUnits;
     [HideInInspector]
     public List<Squad> AllSquads;
-  
+ 
     public List<string> AllTypesUnit;
     [HideInInspector]
     public List<UnitScript> AllUnits = new List<UnitScript>();
@@ -39,22 +39,15 @@ public class SquadManager : MonoBehaviour
 
     void Start()
     {
+        StartCoroutine(WaitForAddSquads());
+    }
+
+   IEnumerator WaitForAddSquads()
+    {
+        yield return new WaitForEndOfFrame();
         for (int i = 0; i < AllSquads.Count; i++)
         {
             AllSquads[i].OnStart();
-        }
-    }
-
-
-    private void OnValidate()
-    {
-        AllUnits.Clear();
-        for (int i = 0; i < AllSquads.Count; i++)
-        {
-            for (int j = 0; j < AllSquads[i].AllUnits.Count; j++)
-            {
-                AllUnits.AddRange(AllSquads[i].AllUnits[j].Units);
-            }
         }
     }
 
@@ -142,7 +135,7 @@ public class SquadManager : MonoBehaviour
         for (int i = 0; i < _currentUnitsMove.Count; i++)
         {
             _updateUnitCellData[i] =
-                new UpdateUnitCellData(_currentUnitsMove[i].Cell, _currentUnitsMove[i], GridManager.Instance);
+                new UpdateUnitCellData( _currentUnitsMove[i], GridManager.Instance);
         }
 
         UpdateUnitCellJob _updateUnitCell = new UpdateUnitCellJob
@@ -184,15 +177,19 @@ public class SquadManager : MonoBehaviour
         public int CurrentId;
         public int3 OffSet;
         public int3 CellFactor;
+        public int3 LinesPosition;
+        public int3 GridLineCount;
 
-        public UpdateUnitCellData(GridCell gridCell, UnitScript unit, GridManager gridManager)
+        public UpdateUnitCellData( UnitScript unit, GridManager gridManager)
         {
             UnitPosition = unit.transform.position;
-            MinCellPosition = gridCell.MinPosition;
-            MaxCellPosition = gridCell.MaxPosition;
-            CurrentId = gridCell.ID;
+            MinCellPosition = unit.Cell.MinPosition;
+            MaxCellPosition = unit.Cell.MaxPosition;
+            CurrentId = unit.Cell.ID;
             OffSet = new int3(0, 0, 0);
             CellFactor = gridManager.CellFactor;
+            GridLineCount = gridManager.CellCount;
+            LinesPosition = unit.Cell.LinesPosition;
         }
     }
 
@@ -206,19 +203,46 @@ public class SquadManager : MonoBehaviour
             var data = AllData[index];
 
             if (data.UnitPosition.x > data.MaxCellPosition.x)
+            {
+                if(data.LinesPosition.x != data.GridLineCount.x)
                 data.OffSet.x += 1;
+            }
+
             else if (data.UnitPosition.x < data.MinCellPosition.x)
-                data.OffSet.x -= 1;
+            {
+                if(data.LinesPosition.x != 0)
+                  data.OffSet.x -= 1;
+            }
+              
 
             if (data.UnitPosition.y > data.MaxCellPosition.y)
-                data.OffSet.y += 1;
+            {
+                if (data.LinesPosition.y != data.GridLineCount.y)
+                {
+                    data.OffSet.y += 1;
+                }
+               
+            }
+                
             else if (data.UnitPosition.y < data.MinCellPosition.y)
+            {
+                if(data.LinesPosition.y != 0)
                 data.OffSet.y -= 1;
+            }
+                
 
             if (data.UnitPosition.z > data.MaxCellPosition.z)
-                data.OffSet.z += 1;
+            { 
+                if(data.LinesPosition.z != data.GridLineCount.z)
+                  data.OffSet.z += 1;
+            }
+              
             else if (data.UnitPosition.z < data.MinCellPosition.z)
-                data.OffSet.z -= 1;
+            {
+                if(data.LinesPosition.z != 0)
+                 data.OffSet.z -= 1;
+            }
+               
 
             if (data.OffSet.Equals(int3.zero))
             {

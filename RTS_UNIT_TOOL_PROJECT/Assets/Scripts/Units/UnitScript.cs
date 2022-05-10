@@ -24,7 +24,7 @@ public class UnitScript : MonoBehaviour
     public BoidModule Boid;
  [HideInInspector]
     public int MovementCellIndexList;
-[HideInInspector]
+    [HideInInspector]
     public bool IsMove;
     [HideInInspector]
     public int DestinationPointIndex;
@@ -96,7 +96,7 @@ public class UnitScript : MonoBehaviour
         int idCell = (finalCellCount.x) * GridManager.Instance.CellCount.y * GridManager.Instance.CellCount.z +
                      (finalCellCount.y) * GridManager.Instance.CellCount.z + finalCellCount.z;
 
-
+        
         Cell = GridManager.Instance.Grid[idCell];
 
         if (Cell.TryGetIndexList(SO.MovmentType, out int index))
