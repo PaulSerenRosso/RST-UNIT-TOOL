@@ -18,8 +18,10 @@ public class UnitSO : ScriptableObject
     public float DestinationPointRotationSpeed; 
     public float DestinationFightSpeed;
     public float DestinationFightRotationSpeed;
-    [HideInInspector]
+  [HideInInspector]
    public List<int> MovmentTypeList= new List<int>();
+
+   public float BoidSmoothFactor;
     
     #endregion
 
@@ -62,7 +64,9 @@ public class UnitSO : ScriptableObject
         [SerializeField] private BoidParameter _cohesionParameter;
         [SerializeField] private BoidParameter _alignementParameter;
         [SerializeField] private BoidParameter _avoidanceParameter;
+        [HideInInspector]
         public DistanceCellsClass[] AllDistanceCellsClass = new DistanceCellsClass[4];
+        public float DistanceToDestinationPoint;
         [HideInInspector]
        public float[] AllSpeeds = new float[3]; 
 
@@ -71,7 +75,7 @@ public class UnitSO : ScriptableObject
 
    public void OnValidate()
    {
-       
+      BoidSmoothFactor = Mathf.Clamp(BoidSmoothFactor, 0, 1); 
        MovmentTypeList.Clear();
        MovmentTypeList.Add((int)MovmentType);
        MovmentTypeIndicesDetection.Clear();
@@ -83,9 +87,14 @@ public class UnitSO : ScriptableObject
        GridManager gridManager = FindObjectOfType<GridManager>();
        DistanceAttack.BaseToSquare();
        DistanceEngagement.ConvertDistanceToDistanceCell(gridManager);
+       _alignementParameter.Distance.Base =
+           Mathf.Min(_alignementParameter.Distance.Base, _cohesionParameter.Distance.Base);
+       _avoidanceParameter.Distance.Base =
+           Mathf.Min(_avoidanceParameter.Distance.Base, _cohesionParameter.Distance.Base);   
        _cohesionParameter.Distance.ConvertDistanceToDistanceCell(gridManager);
        _alignementParameter.Distance.ConvertDistanceToDistanceCell(gridManager);
        _avoidanceParameter.Distance.ConvertDistanceToDistanceCell(gridManager);
+       
        AllDistanceCellsClass[0].SetValues(_cohesionParameter.Distance.Base, _cohesionParameter.Distance.DistanceJob);
        AllDistanceCellsClass[1].SetValues(_alignementParameter.Distance.Base, _alignementParameter.Distance.DistanceJob);
        AllDistanceCellsClass[2].SetValues(_avoidanceParameter.Distance.Base, _avoidanceParameter.Distance.DistanceJob);

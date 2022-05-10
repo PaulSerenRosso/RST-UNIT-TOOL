@@ -1,0 +1,114 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a666604c334b4d41a1759e3f37ca580, type: 3}
+  m_Name: BaseUnderGround
+  m_EditorClassIdentifier: 
+  Type: 0
+  MaxHealth: 130
+  MovmentType: 2
+  DestinationPointSpeed: 3
+  DestinationPointRotationSpeed: 125
+  DestinationFightSpeed: 5
+  DestinationFightRotationSpeed: 300
+  MovmentTypeList: 02000000
+  BoidSmoothFactor: 0.005
+  MovmentTypesDetection: 02000000
+  DistanceEngagement:
+    Base: 10.28
+    DistanceJob:
+      Square: 105.6784
+      LinesCell:
+        x: 1
+        y: 3
+        z: 1
+      Area: 63
+  IsEngageAutomatically: 0
+  MovmentTypeIndicesDetection: 02000000
+  WithStopMovment: 1
+  DistanceStopMovment:
+    Base: 8.25
+    Square: 68.0625
+  ChangePriority: 0
+  TargetPriorities:
+  - Enum: 2
+    Value: 3
+  IsRandomDamage: 1
+  MinDamage: 20
+  MaxDamage: 50
+  BaseDamage: 0
+  CooldownAttack: 2
+  DistanceAttack:
+    Base: 9.53
+    Square: 90.82089
+  _cohesionParameter:
+    Distance:
+      Base: 7.08
+      DistanceJob:
+        Square: 50.1264
+        LinesCell:
+          x: 1
+          y: 2
+          z: 1
+        Area: 45
+    Speed: 5
+  _alignementParameter:
+    Distance:
+      Base: 4
+      DistanceJob:
+        Square: 16
+        LinesCell:
+          x: 1
+          y: 1
+          z: 1
+        Area: 27
+    Speed: 1.38
+  _avoidanceParameter:
+    Distance:
+      Base: 3
+      DistanceJob:
+        Square: 9
+        LinesCell:
+          x: 1
+          y: 1
+          z: 1
+        Area: 27
+    Speed: 20
+  AllDistanceCellsClass:
+  - Base: 7.08
+    DistanceJob:
+      Square: 50.1264
+      LinesCell:
+        x: 1
+        y: 2
+        z: 1
+      Area: 45
+  - Base: 4
+    DistanceJob:
+      Square: 16
+      LinesCell:
+        x: 1
+        y: 1
+        z: 1
+      Area: 27
+  - Base: 3
+    DistanceJob:
+      Square: 9
+      LinesCell:
+        x: 1
+        y: 1
+        z: 1
+      Area: 27
+  DistanceToDestinationPoint: 3.5
+  AllSpeeds:
+  - 5
+  - 1.38
+  - 20

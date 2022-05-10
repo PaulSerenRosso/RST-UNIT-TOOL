@@ -16,6 +16,7 @@ public class GetAllUnitsAtDistanceData
         public bool WithSquareDistance;
     }
 
+
     // pour tout les jobs
     [Serializable]
     public class DataClass : Base
@@ -29,11 +30,8 @@ public class GetAllUnitsAtDistanceData
         public void SetValues(UnitScript unitScript, DistanceUnitJob distanceCheck, List<int> movmentTypes, bool withSquareDistance)
         {
             Unit = unitScript;
-            Index = unitScript.DistanceUnitsResults.UnitsResults.Count;
- 
             DistanceCheck = distanceCheck;
             TypeMovmentUnit = movmentTypes;
-
             WithSquareDistance = withSquareDistance;
         }
 

@@ -1,10 +1,12 @@
 using System.Collections.Generic;
 using System.Data;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 public class UnitsBoidJobsManager : MonoBehaviour
 {
@@ -22,6 +24,8 @@ public class UnitsBoidJobsManager : MonoBehaviour
     }
     public void OnUpdate()
     {
+    
+    
         if (BoidsData.Count == 0)
             return;
 
@@ -58,16 +62,24 @@ public class UnitsBoidJobsManager : MonoBehaviour
             {
                 new MinMaxIndexClass(), new MinMaxIndexClass(), new MinMaxIndexClass()
             };
+           
             for (int j = 0; j < 3; j++)
             {
                 currentMinMaxIndices[j].MinIndex = _allUnits[j].Count;
-                for (int k = 0; k < BoidsData[i].UnitsTransform[j].Count; k++)
+         
+                for (int k = 0; k < BoidsData[i].Units[j].Count; k++)
                 {
                     if (j == 1)
-                        _allUnits[j].Add(BoidsData[i].UnitsTransform[j][k].forward);
+                    {
+                        
+                        _allUnits[j].Add(BoidsData[i].Units[j][k].transform.forward);
+                    }
 
                     else
-                        _allUnits[j].Add(BoidsData[i].UnitsTransform[j][k].position);
+                    {
+                        _allUnits[j].Add(BoidsData[i].Units[j][k].transform.position);
+                        
+                    }
                 }
 
                 currentMinMaxIndices[j].MaxIndex = _allUnits[j].Count;
@@ -152,8 +164,17 @@ public class UnitsBoidJobsManager : MonoBehaviour
         for (int i = 0; i < BoidsData.Count; i++)
         {
 
-            BoidsData[i].Unit.Agent.Move(_velocity[i]*Time.deltaTime);
-          BoidsData[i].Unit.transform.forward += (Vector3) _torque[i] * Time.deltaTime;
+            
+            BoidsData[i].Unit.Boid.OldVelocity =
+                Vector3.Lerp(BoidsData[i].OldVelocity, _velocity[i] * Time.deltaTime, BoidsData[i].SmoothFactor);
+            BoidsData[i].Unit.Agent.Move( BoidsData[i].Unit.Boid.OldVelocity);
+            float3 rotation = (BoidsData[i].Unit.transform.forward + (Vector3) _torque[i] * Time.deltaTime).normalized;
+            if (!rotation.Equals(float3.zero))
+            {
+                   BoidsData[i].Unit.transform.forward = ( BoidsData[i].Unit.transform.forward + (Vector3) _torque[i] * Time.deltaTime).normalized;
+            }
+       
+//        Debug.Log(  BoidsData[i].Unit.transform.forward );
         }
         #endregion
 
@@ -168,6 +189,7 @@ public class UnitsBoidJobsManager : MonoBehaviour
         BoidsData.Clear();
 
         #endregion
+
     }
 
     #region Jobs
@@ -194,7 +216,7 @@ public class UnitsBoidJobsManager : MonoBehaviour
                 return;
        
             movment.Base.ResultVector /= MinMaxIndices[index].MaxIndex  - MinMaxIndices[index].MinIndex;
-      //     movment.Base.ResultVector =  Vector3.Lerp(movment.Position, movment.Base.ResultVector, 0.5f);
+         // movment.Base.ResultVector =  Vector3.Lerp(movment.Position, movment.Base.ResultVector, 0.2f);
             movment.Base.ResultVector -= movment.Position;
             movment.Base.ResultVector =  Vector3.Normalize(movment.Base.ResultVector);
             movment.Base.ResultVector *= movment.Base.Speed;

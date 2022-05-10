@@ -29,21 +29,9 @@ public class SquadEditor : Editor
 
             DestroyOldUnits(grid);
             InstantiateNewUnits();
-            SetUnitsVariables(map, grid);
-            EditorUtility.SetDirty(target);
-        }
-
-        if (GUILayout.Button("Update Squad Position"))
-        {
-            MapManager map = FindObjectOfType<MapManager>();
-            GridManager grid = FindObjectOfType<GridManager>();
-            SetUnitsVariables(map, grid);
-            EditorUtility.SetDirty(target);
-        }
-
-        if (GUILayout.Button("Add Squad to Player Squad"))
-        {
+            SetUnitsVariables(map, grid); 
             UpdatePlayerSquad();
+            EditorUtility.SetDirty(target);
         }
     }
 
@@ -88,16 +76,11 @@ public class SquadEditor : Editor
     {
         for (int j = 0; j < _squad.AllUnits.Count; j++)
         {
-
-
             for (int i = _squad.AllUnits[j].Units.Count - 1; i > -1; i--)
             {
 
                 Debug.Log("test");
                 Transform unitTransform = _squad.transform.GetChild(i);
-                UnitScript unitScript = unitTransform.GetComponent<UnitScript>();
-                gridManager.Grid[unitScript.Cell.ID].AllUnits[unitScript.MovementCellIndexList].Units.Remove(unitScript);
-              
                 DestroyImmediate(unitTransform.gameObject);
             }
         }
@@ -109,8 +92,7 @@ public class SquadEditor : Editor
     void InstantiateNewUnits()
     {
   
-        _squad.transform.position = new Vector3(_squad.transform.position.x, _squad.transform.position.y,
-            _squad.transform.position.x);
+       
         for (int i = 0; i < _squad.SpawnerUnits.Count; i++)
         {
             UnitScript unitPrefab = _squad.SpawnerUnits[i].unitObject.GetComponent<UnitScript>();
@@ -148,7 +130,6 @@ public class SquadEditor : Editor
             { 
                 UnitScript unitScript = _squad.AllUnits[i].Units[j];
             SetUnitPosition(unitScript, map);
-            SetUnitCell(unitScript, grid);
             EditorUtility.SetDirty(unitScript);
             }
         }
@@ -166,33 +147,6 @@ public class SquadEditor : Editor
         unitScript.Squad = _squad;
     }
 
-    void SetUnitCell(UnitScript unitScript, GridManager grid)
-    {
-        float3 cellCount = (unitScript.transform.position - grid.transform.position) / grid.SizeCells;
-
-        cellCount.x = Mathf.FloorToInt(cellCount.x);
-        cellCount.y = Mathf.FloorToInt(cellCount.y);
-        cellCount.z = Mathf.FloorToInt(cellCount.z);
-
-
-        int3 finalCellCount = (int3) cellCount;
-        int idCell = (finalCellCount.x) * grid.CellCount.y * grid.CellCount.z +
-                     (finalCellCount.y) * grid.CellCount.z + finalCellCount.z;
-
-        Debug.Log(idCell);
-        unitScript.Cell = grid.Grid[idCell];
-
-        if (unitScript.Cell.TryGetIndexList(unitScript.SO.MovmentType, out int index))
-        {
-            if (unitScript.Cell.AllUnits[index].Units == null)
-                unitScript.Cell.AllUnits[index].Units = new List<UnitScript>();
-
-            unitScript.Cell.AllUnits[index].Units.Add(unitScript);
-            unitScript.MovementCellIndexList = index;
-        }
-        else
-        {
-            Debug.LogError("the movment type cell isn't valid");
-        }
-    }
+    
+    
 }

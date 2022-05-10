@@ -3,14 +3,13 @@ using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Serialization;
 
 public class MapManager : MonoBehaviour
 {
     [SerializeField] public List<TerrainY> AllTerrains;
-
-    [SerializeField] public Material UnderSkyMaterial;
     public TerrainData BaseData;
-    [SerializeField] private float _detectDistanceNavMeshPoint;
+public float DetectDistanceNavMesh;
 
 
     public static MapManager Instance { get; private set; }
@@ -21,7 +20,7 @@ public class MapManager : MonoBehaviour
             Destroy(gameObject); // Suppression d'une instance précédente (sécurité...sécurité...)
 
         Instance = this;
-        UnderSkyMaterial.color = new Color(0, 0, 0, 0);
+   
     }
 
     private void OnValidate()
@@ -67,7 +66,7 @@ public class MapManager : MonoBehaviour
         navHit = new NavMeshHit();
         if (index == 1)
         {
-            if (NavMesh.SamplePosition(aimPosition, out navHit, _detectDistanceNavMeshPoint,
+            if (NavMesh.SamplePosition(aimPosition, out navHit, DetectDistanceNavMesh,
                 AllTerrains[index].NavArea))
             {
                 return true;
@@ -81,16 +80,17 @@ public class MapManager : MonoBehaviour
         else
         {
             float _distance = 0;
-            for (int i = 0; i < AllTerrains[index].YDistances.Count; i++)
+            for (int i = 0; i < AllTerrains[1].YDistances.Count; i++)
             {
-                if (AllTerrains[index].YDistances[i].Type == UnitMovmentType.Earthly)
+                if (AllTerrains[1].YDistances[i].Type ==(UnitMovmentType) index)
                 {
-                    _distance = AllTerrains[index].YDistances[i].YDistance;
+                    _distance = AllTerrains[1].YDistances[i].YDistance;
                 }
             }
+//          Debug.Log(_distance);
 
             if (NavMesh.SamplePosition((float3) Vector3.up * _distance + aimPosition, out navHit,
-                _detectDistanceNavMeshPoint, AllTerrains[index].NavArea))
+                DetectDistanceNavMesh, AllTerrains[index].NavArea))
             {
                 return true;
             }

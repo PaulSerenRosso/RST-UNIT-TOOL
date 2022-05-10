@@ -4,30 +4,42 @@ using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
+using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.AI;
 using Random = UnityEngine.Random;
+
 
 public class FightModule : UnitModule
 {
-    [SerializeField] private int indexFightDetection;
+    private int indexFightDetection;
 
-    [SerializeField] private int indexAttackDetection;
-
-    public UnitWithDistanceAmount TargetUnit;
+    [HideInInspector]
+    public UnitWithDistanceAmount TargetUnit = new UnitWithDistanceAmount();
     private bool _attackIsReady;
     private float _timerAttack;
-    public List<UnitsFightJobsData.UnitWithDistance> AttackUnitsList;
-    bool _engagedUnitInEngageRange = false;
-    bool _hasGetUnitsAttackRange = false;
+
     List<UnitWithDistanceAmount> _targetUnits = new List<UnitWithDistanceAmount>();
-    private List<UnitWithDistanceAmount> _attackUnits = new List<UnitWithDistanceAmount>();
-    private bool _engagedUnitInAttackRange;
+
+
     private int currentPriorityIndex = 0;
     private bool _isNewTarget;
     private bool _inFight;
+    private float3 _targetPosition;
+
+
+
+    private float timerUpdateTargetUnitDestination;
 
     private void OnDrawGizmosSelected()
     {
+        if(Unit.SO == null) return;
+        Gizmos.color = Color.white;
+        Gizmos.DrawWireSphere(transform.position, Unit.SO.DistanceEngagement.Base);
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, Unit.SO.DistanceAttack.Base);
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(transform.position, Unit.SO.DistanceStopMovment.Base);
     }
 
     public override void OnValidate()
@@ -41,26 +53,48 @@ public class FightModule : UnitModule
 
     public override void AskUpdate()
     {
-        _inFight = false;
-        if (Unit.DestinationIsUnit ||
-            !Unit.DestinationIsPoint && !Unit.DestinationIsUnit && Unit.SO.IsEngageAutomatically)
+        if (Unit.IsEngage || Unit.DestinationIsUnit ||( !Unit.IsEngage &&
+            !Unit.DestinationIsPoint && !Unit.DestinationIsUnit && Unit.SO.IsEngageAutomatically))
         {
             _inFight = true;
             _isNewTarget = false;
+
             if (TargetUnit.Unit)
             {
-                Unit.DistanceUnitsResults.AskCheckUnitAtDistance(Unit, Unit.SO.DistanceEngagement.DistanceJob,
-                    TargetUnit.Unit, out indexFightDetection);
+             
+                if (!CheckPriorityChange())
+                {
+             
+                    Unit.DistanceUnitsResults.AskCheckUnitAtDistance(Unit, Unit.SO.DistanceEngagement.DistanceJob,
+                        TargetUnit.Unit, out indexFightDetection);
+                }
+                else
+                {
+               
+                    TargetUnit.Unit = null; 
+                    Unit.DistanceUnitsResults.AskDistanceUnitsWithAmount(Unit, Unit.SO.DistanceEngagement.DistanceJob,
+                        Unit.SO.MovmentTypeIndicesDetection,
+                        out indexFightDetection);
+                    _isNewTarget = true;
+                }
             }
             else
             {
+            
+                TargetUnit.Unit = null; 
                 Unit.DistanceUnitsResults.AskDistanceUnitsWithAmount(Unit, Unit.SO.DistanceEngagement.DistanceJob,
                     Unit.SO.MovmentTypeIndicesDetection,
                     out indexFightDetection);
+
                 _isNewTarget = true;
             }
         }
+        else if(_inFight)
+        {
+            _inFight = false;
+        }
     }
+
 
     public void AskLateUpdate()
     {
@@ -68,12 +102,35 @@ public class FightModule : UnitModule
         {
             if (TargetUnit.Unit)
             {
-                if (Unit.DistanceUnitsResults.CheckDistanceUnitResults[indexFightDetection].InDistance)
+                if (!_isNewTarget)
                 {
-                    Unit.DistanceUnitsResults.AskDistanceUnitsWithAmount(Unit, Unit.SO.DistanceEngagement.DistanceJob,
-                        Unit.SO.MovmentTypeIndicesDetection,
-                        out indexFightDetection);
-                    _isNewTarget = true;
+                    try
+                    { 
+                       
+                        if (!Unit.DistanceUnitsResults.CheckDistanceUnitResults[indexFightDetection].InDistance)
+                                         {
+                                             TargetUnit.Unit = null;
+                                             Unit.DistanceUnitsResults.AskDistanceUnitsWithAmount(Unit,
+                                                 Unit.SO.DistanceEngagement.DistanceJob,
+                                                 Unit.SO.MovmentTypeIndicesDetection,
+                                                 out indexFightDetection);
+                                             _isNewTarget = true;
+                                         }
+                        else
+                        {
+//                            Debug.Log("essaye de lire ça");
+                            TargetUnit.SquareDistance =
+                                Unit.DistanceUnitsResults.CheckDistanceUnitResults[indexFightDetection].SquareDistance;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Unit.DistanceUnitsResults.AskDistanceUnitsWithAmount(Unit,
+                            Unit.SO.DistanceEngagement.DistanceJob,
+                            Unit.SO.MovmentTypeIndicesDetection,
+                            out indexFightDetection);
+                        _isNewTarget = true;
+                    }
                 }
             }
         }
@@ -91,7 +148,6 @@ public class FightModule : UnitModule
 
         if (_inFight)
         {
-            _hasGetUnitsAttackRange = false;
             _targetUnits.Clear();
             if (_isNewTarget)
             {
@@ -99,49 +155,133 @@ public class FightModule : UnitModule
             }
             else
             {
-                _engagedUnitInEngageRange = true;
                 Fight();
+            }
+        }
+    }
+
+    void UpdateAgentToTargetUnit()
+    {
+   
+        if (timerUpdateTargetUnitDestination < SquadManager.Instance.TargetUnitDestinationUpdateTime)
+        {
+            timerUpdateTargetUnitDestination += Time.deltaTime;
+            return;
+        }
+
+        timerUpdateTargetUnitDestination = 0;
+
+        if (TargetUnit.Unit.SO.MovmentType == Unit.SO.MovmentType)
+        {
+            _targetPosition = TargetUnit.Unit.transform.position;
+            Unit.Agent.SetDestination(_targetPosition);
+        }
+        else
+        {
+            for (int j = 0;
+                j < MapManager.Instance.AllTerrains[(int) TargetUnit.Unit.SO.MovmentType].YDistances.Count;
+                j++)
+            {
+                if (Unit.SO.MovmentType == MapManager.Instance
+                    .AllTerrains[(int) TargetUnit.Unit.SO.MovmentType].YDistances[j].Type)
+                {
+                    if (NavMesh.SamplePosition(TargetUnit.Unit.transform.position +
+                                               Vector3.up * MapManager.Instance
+                                                   .AllTerrains[(int) TargetUnit.Unit.SO.MovmentType]
+                                                   .YDistances[j].YDistance, out NavMeshHit _hit,
+                        MapManager.Instance.DetectDistanceNavMesh,
+                        MapManager.Instance.AllTerrains[(int) Unit.SO.MovmentType].NavArea))
+
+                        _targetPosition = _hit.position;
+                    Unit.Agent.SetDestination(_targetPosition);
+                    break;
+                }
+            }
+        }
+    }
+
+    void GetEnemiesUnits()
+    {
+        for (int i = 0;
+            i < Unit.DistanceUnitsResults.UnitsResultAmounts[indexFightDetection].UnitsWithAmount.Count;
+            i++)
+        {
+         //   Debug.Log(Unit.Cell.ID + "    " + Unit
+           //     .DistanceUnitsResults.UnitsResultAmounts[indexFightDetection].UnitsWithAmount[i].Unit.Squad
+             //   .Player);
+            if (PlayerManager.Instance.AllPlayers[Unit.Squad.Player].EnemyPlayers.Contains(Unit
+                .DistanceUnitsResults.UnitsResultAmounts[indexFightDetection].UnitsWithAmount[i].Unit.Squad
+                .Player))
+            {
+                _targetUnits.Add(Unit.DistanceUnitsResults.UnitsResultAmounts[indexFightDetection]
+                    .UnitsWithAmount[i]);
             }
         }
     }
 
     void FightNewTarget()
     {
-        if (Unit.DistanceUnitsResults.UnitsResults[indexFightDetection].Units.Count != 0)
+     
+        if (Unit.DistanceUnitsResults.UnitsResultAmounts[indexFightDetection].UnitsWithAmount.Count != 0)
         {
-            for (int i = 0;
-                i < Unit.DistanceUnitsResults.UnitsResultAmounts[indexFightDetection].UnitsWithAmount.Count;
-                i++)
-            {
-                if (PlayerManager.Instance.AllPlayers[Unit.Squad.Player].EnemyPlayers.Contains(Unit
-                    .DistanceUnitsResults.UnitsResultAmounts[indexFightDetection].UnitsWithAmount[i].Unit.Squad
-                    .Player))
-                {
-                    _targetUnits.Add(Unit.DistanceUnitsResults.UnitsResultAmounts[indexFightDetection]
-                        .UnitsWithAmount[i]);
-                }
-            }
+            GetEnemiesUnits();
 
-            CheckPriorityChange();
-            if (!Unit.IsEngage)
+            if (_targetUnits.Count != 0)
             {
-                Unit.IsEngage = true;
-                Unit.Agent.speed = Unit.SO.DestinationFightSpeed;
-                Unit.Agent.angularSpeed = Unit.SO.DestinationFightRotationSpeed;
-            }
 
-            CheckStopMovmentDistance();
-            if (_attackIsReady)
-            {
-                if (!_hasGetUnitsAttackRange)
+
+             if (Unit.DestinationIsUnit)
+             {
+                 Unit.DestinationIsUnit = false;
+                 Unit.Squad.DestinationUnitList[Unit.DestinationUnitIndex].Units.Remove(Unit);
+             }
+      
+                TargetUnit = ChangeTarget(_targetUnits);
+                if (!Unit.IsEngage)
                 {
-                    _engagedUnitInAttackRange = false;
-                    _attackUnits.Clear();
-                    GetUnitsInAttackRange(out _attackUnits);
+                    Unit.IsEngage = true;
+                    Unit.Agent.speed = Unit.SO.DestinationFightSpeed;
+                    Unit.Agent.angularSpeed = Unit.SO.DestinationFightRotationSpeed;
+                    Unit.IsMove = true;
                 }
 
+               
+                CheckStopMovmentDistance();
                 Attack();
+                UpdateAgentToTargetUnit();
             }
+            else
+            {
+              
+                EndFight();
+            }
+        }
+        else
+        {
+            EndFight();
+        }
+    }
+
+    public bool CheckEndFight()
+    {
+        if (!Unit.DestinationIsUnit || Unit.SO.IsEngageAutomatically) return true;
+        return false;
+    }
+
+    public void EndFight()
+    {
+        bool targetNull = Unit.DestinationIsUnit && !Unit.Squad.TargetUnit;
+        if (targetNull)
+        {
+            Unit.DestinationIsPoint = false; 
+        }
+        if (CheckEndFight() || targetNull)
+        {
+            Unit.Agent.SetDestination(transform.position);
+            Unit.IsMove = false;
+            Unit.Agent.speed = 0;
+            Unit.IsEngage = false;
+            Unit.Agent.angularSpeed = 0;
         }
     }
 
@@ -162,7 +302,7 @@ public class FightModule : UnitModule
 
     void Fight()
     {
-        CheckPriorityChange();
+      //  Debug.Log("bonsoir à toi le ifht");
         if (!Unit.IsEngage)
         {
             Unit.IsEngage = true;
@@ -171,116 +311,70 @@ public class FightModule : UnitModule
         }
 
         CheckStopMovmentDistance();
-
-
-        if (_attackIsReady)
-        {
-            if (!_hasGetUnitsAttackRange)
-            {
-                _engagedUnitInAttackRange = false;
-                _attackUnits.Clear();
-                GetUnitsInAttackRange(out _attackUnits);
-            }
-
-            Attack();
-        }
+        Attack();
+        UpdateAgentToTargetUnit();
     }
 
-    void CheckPriorityChange()
+    bool CheckPriorityChange()
     {
         switch (Unit.SO.ChangePriority)
         {
             case TargetChange.Automatically:
             {
-                TargetUnit = ChangeTarget(_targetUnits);
-                break;
-            }
-            case TargetChange.DeathUnit:
-            {
-                if (!_isNewTarget || !TargetUnit.Unit)
-                {
-                    TargetUnit = ChangeTarget(_targetUnits);
-                }
-
-                break;
+                return true;
             }
             case TargetChange.MaxDistanceAttack:
             {
-                if (!_isNewTarget || TargetUnit.SquareDistance <= Unit.SO.DistanceAttack.Square)
+                if (TargetUnit.SquareDistance <= Unit.SO.DistanceAttack.Square)
                 {
-                    _attackUnits.Clear();
-                    _engagedUnitInAttackRange = false;
-                    GetUnitsInAttackRange(out _attackUnits);
-                    _hasGetUnitsAttackRange = true;
-                    TargetUnit = ChangeTarget(_attackUnits);
+                    return false;
                 }
 
-                break;
+                return true;
             }
         }
+
+        return false;
     }
 
-    void GetUnitsInAttackRange(out List<UnitWithDistanceAmount> attackUnits)
-    {
-        attackUnits = new List<UnitWithDistanceAmount>();
-        for (int i = 0; i < _targetUnits.Count; i++)
-        {
-            if (Unit.SO.DistanceAttack.Square > _targetUnits[i].SquareDistance)
-            {
-                attackUnits.Add(_targetUnits[i]);
-                _engagedUnitInAttackRange = true;
-            }
-        }
-    }
 
     void Attack()
     {
-        if (!_engagedUnitInAttackRange)
+ 
+        if (_attackIsReady)
         {
-            if (Unit.SO.IsRandomDamage)
+          
+            if (TargetUnit.SquareDistance <= Unit.SO.DistanceAttack.Square)
             {
-                JobHandle _handle = new JobHandle();
-                RandomDamageJob _randomDamageJob = new RandomDamageJob()
+             //   Debug.Log("tesfdsdsqfdsqfdsqfdsqftaaaa");
+                if (Unit.SO.IsRandomDamage)
                 {
-                    Damage = 0, MaxDamage = Unit.SO.MaxDamage, MinDamage = Unit.SO.MinDamage
-                };
-                _randomDamageJob.Schedule();
-                _handle.Complete();
-                TargetUnit.Unit.TakeDamage(_randomDamageJob.Damage, Unit);
-            }
-            else
-            {
-                TargetUnit.Unit.TakeDamage(Unit.SO.BaseDamage, Unit);
-            }
+                    
+                    TargetUnit.Unit.TakeDamage( Random.Range(Unit.SO.MinDamage, Unit.SO.MaxDamage));
+                }
+                else
+                {
+                    TargetUnit.Unit.TakeDamage(Unit.SO.BaseDamage);
+                }
 
-            _timerAttack = 0;
+                _attackIsReady = false;
+                _timerAttack = 0;
+            }
         }
     }
 
-    [BurstCompile]
-    public struct RandomDamageJob : IJob
-    {
-        public float Damage;
-        public float MinDamage;
-        public float MaxDamage;
-
-        public void Execute()
-        {
-            Damage = Random.Range(MinDamage, MaxDamage);
-        }
-    }
 
 
     UnitWithDistanceAmount ChangeTarget(List<UnitWithDistanceAmount> units)
     {
-        for (int i = 0; i < currentPriorityIndex + 1; i++)
+        for (int i = 0; i < Unit.SO.TargetPriorities.Count; i++)
         {
             if (CheckPriority(Unit.SO.TargetPriorities[i], units, out UnitWithDistanceAmount _newUnitTarget))
             {
                 return _newUnitTarget;
             }
         }
-
+      //  Debug.Log(units.Count);
         return GetCloserUnit(units);
     }
 
@@ -290,7 +384,7 @@ public class FightModule : UnitModule
         {
             case TargetPriority.LessHealth:
             {
-                if ((int) unitWithDistanceAmount.Unit.Health <= targetPriorityClass.Value)
+                if ((int) unitWithDistanceAmount.Unit.HealthPercentage <= targetPriorityClass.Value)
                     return true;
                 return false;
             }
@@ -314,17 +408,18 @@ public class FightModule : UnitModule
     public bool CheckPriority(TargetPriorityClass targetPriorityClass, List<UnitWithDistanceAmount> units,
         out UnitWithDistanceAmount targetUnit)
     {
-        for (int i = units.Count - 1; i > -1; i++)
+        List<UnitWithDistanceAmount> _units = new List<UnitWithDistanceAmount>(units); 
+        for (int i = _units.Count - 1; i > -1; i--)
         {
-            if (!CheckPriorityCondition(targetPriorityClass, units[i]))
+            if (!CheckPriorityCondition(targetPriorityClass, _units[i]))
             {
-                units.Remove(units[i]);
+                _units.Remove(_units[i]);
             }
         }
 
-        if (units.Count != 0)
+        if (_units.Count != 0)
         {
-            targetUnit = GetCloserUnit(units);
+            targetUnit = GetCloserUnit(_units);
             return true;
         }
 
@@ -337,12 +432,11 @@ public class FightModule : UnitModule
         int index = 0;
         for (int i = 0; i < Units.Count; i++)
         {
-            if (Units[index].SquareDistance >= Units[i].SquareDistance)
+            if (Units[index].SquareDistance <= Units[i].SquareDistance)
             {
                 index = i;
             }
         }
-
         return Units[index];
     }
 }

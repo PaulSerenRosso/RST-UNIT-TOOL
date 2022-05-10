@@ -1,7 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+[Serializable]
 public class UnitWithDistanceAmount
 {
   public UnitScript Unit;
@@ -12,5 +13,10 @@ public class UnitWithDistanceAmount
     SquareDistance = squareDistance;
     Unit = unit;
   }
+
+ public UnitWithDistanceAmount()
+ {
+  
+ }
 }
 

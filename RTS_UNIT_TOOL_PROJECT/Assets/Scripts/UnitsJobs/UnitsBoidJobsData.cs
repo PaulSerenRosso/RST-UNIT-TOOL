@@ -10,8 +10,10 @@ public class UnitsBoidJobsData
     public class UnitsBoidJobsClass
     {
         public UnitScript Unit;
-        public List<List<Transform>> UnitsTransform;
+        public List<List<UnitScript>> Units;
         public float[] Speeds;
+        public float3 OldVelocity;
+        public float SmoothFactor;
     }
 
     public struct Base

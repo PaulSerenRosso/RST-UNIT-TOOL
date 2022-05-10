@@ -6,23 +6,28 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-    private RaycastHit _hit;
+ 
+    
+    [Header("Camera Move")]
+    [SerializeField] float _moveSpeed;
+    [SerializeField] private float _borderMoveThickness;
+
+    
+    [Header("Variables for Detect Unit")]
     [SerializeField] private LayerMask _maskSquad;
     [SerializeField] private LayerMask _maskTarget;
     [SerializeField] private float _distanceRay;
-    [SerializeField] float _moveSpeed;
-
-    [SerializeField] private float _borderMoveThickness;
-
-    [SerializeField] private bool hasRelease = true; 
+ private bool hasRelease = true;
 
     public InputMaster Master;
 
+    RaycastHit[] _hits;
     private TerrainData a;
     private Ray ray;
     private bool _isSelect;
     private bool _inInputSelect;
-    private Squad _squadSelected;
+    private Squad _squadSelected;   
+    private RaycastHit _hit;
 
     void Start()
     {
@@ -45,9 +50,11 @@ public class PlayerController : MonoBehaviour
         int moveHeight = 0;
         int moveWidth = 0;
 
-        if (Input.mousePosition.y >= Screen.height - _borderMoveThickness && Input.mousePosition.y <= Screen.height) moveHeight = 1;
+        if (Input.mousePosition.y >= Screen.height - _borderMoveThickness &&
+            Input.mousePosition.y <= Screen.height) moveHeight = 1;
         else if (Input.mousePosition.y <= _borderMoveThickness && Input.mousePosition.y >= 0) moveHeight = -1;
-        if (Input.mousePosition.x >= Screen.width - _borderMoveThickness  && Input.mousePosition.y <= Screen.width) moveWidth = 1;
+        if (Input.mousePosition.x >= Screen.width - _borderMoveThickness &&
+            Input.mousePosition.y <= Screen.width) moveWidth = 1;
         else if (Input.mousePosition.x <= _borderMoveThickness && Input.mousePosition.x >= 0) moveWidth = -1;
         if (moveHeight == 0 && moveWidth == 0)
             return;
@@ -72,49 +79,65 @@ public class PlayerController : MonoBehaviour
     {
         if (_inInputSelect && hasRelease)
         {
-            Debug.Log("testtt");
-        ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            
-            
-            if (_isSelect )
+            ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+
+            if (_isSelect)
             {
-                if (Physics.Raycast(ray, out _hit, _distanceRay, _maskTarget))
+                _hits = Physics.RaycastAll(ray, _distanceRay, _maskTarget);
+                int index = -1;
+                bool _detectUnit = false;
+                for (int i = 0; i < _hits.Length; i++)
                 {
-                    if (_hit.collider.CompareTag("Unit"))
+                    if (_hits[i].collider.CompareTag("Unit"))
                     {
-                        UnitScript unit = _hit.collider.GetComponent<UnitScript>();
+                        UnitScript unit = _hits[i].collider.GetComponent<UnitScript>();
                         if (PlayerManager.Instance.AllPlayers[_squadSelected.Player].EnemyPlayers
                             .Contains(unit.Squad.Player))
                         {
-                            
-                            _squadSelected.SetUnitDestination(GetDestinationsPosition(_hit.point, _squadSelected.movmentTypeUnitsIndex), unit);
+                            _squadSelected.SetUnitDestination(unit);
+                            _detectUnit = true;
+                            break;
                         }
                     }
                     else
-                    { Debug.Log("bouboubobu"); _squadSelected.SetPointDestination(GetDestinations(_hit.point, _squadSelected.movmentTypeUnitsIndex));
+                    {
+                        if (index == -1)
+                            index = i;
                     }
                 }
-
+                if (!_detectUnit)
+                {
+                    if (index != 1)
+                    { 
+                        _squadSelected.SetPointDestination(GetDestinations(_hits[index].point,
+                                                _squadSelected.movmentTypeUnitsIndex));
+                    }
+                    
+                }
             }
             else
             {
                 if (Physics.Raycast(ray, out _hit, _distanceRay, _maskSquad))
                 {
-                    Debug.Log(_hit.collider.gameObject.name);
+                    //                  Debug.Log(_hit.collider.gameObject.name);
                     UnitScript unit = _hit.collider.GetComponent<UnitScript>();
-                    Debug.Log(unit);
+//                    Debug.Log(unit);
+
                     _squadSelected = unit.Squad;
-                
+
                     _isSelect = true;
                 }
-            }    hasRelease = false;
+            }
+
+            hasRelease = false;
         }
-                Debug.DrawRay(ray.origin, ray.direction*_distanceRay);
+
+        Debug.DrawRay(ray.origin, ray.direction * _distanceRay);
     }
 
     void Select(InputAction.CallbackContext context)
     {
-    
         _inInputSelect = true;
     }
 
@@ -126,38 +149,23 @@ public class PlayerController : MonoBehaviour
 
     void Deselect(InputAction.CallbackContext context)
     {
-        if(!_isSelect ) return;
         _isSelect = false;
-        _squadSelected.TargetSquad = null;
-        _squadSelected.Destinations.Clear();
+        if (_squadSelected != null)
+            _squadSelected.TargetSquad = null;
+        _squadSelected = null;
     }
 
-    List<DestinationPosition> GetDestinationsPosition(float3 aimPosition, List<int> indices)
+    List<DestinationPoint> GetDestinations(float3 aimPosition, List<int> indices)
     {
-        List<DestinationPosition> destinations = new List<DestinationPosition>();
+        List<DestinationPoint> destinations = new List<DestinationPoint>();
         for (int i = 0; i < indices.Count; i++)
         {
             if (MapManager.Instance.UpdateDestinationWithTerrainNav(aimPosition, indices[i], out NavMeshHit navMeshHit))
             {
-                destinations.Add(new DestinationPosition(navMeshHit.position, indices[i]));
-            }
-        }
-
-        return destinations; 
-    }
-
-    List<DestinationSquad> GetDestinations(float3 aimPosition, List<int> indices)
-    {
-        List<DestinationSquad> destinations = new List<DestinationSquad>();
-        for (int i = 0; i < indices.Count; i++)
-        {
-            if (MapManager.Instance.UpdateDestinationWithTerrainNav(aimPosition, indices[i], out NavMeshHit navMeshHit))
-            {
-                destinations.Add(new DestinationSquad(navMeshHit.position, indices[i]));
+                destinations.Add(new DestinationPoint(navMeshHit.position, indices[i]));
             }
         }
 
         return destinations;
     }
- 
 }

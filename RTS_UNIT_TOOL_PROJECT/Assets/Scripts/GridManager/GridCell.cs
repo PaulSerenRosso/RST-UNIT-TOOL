@@ -20,11 +20,10 @@ public class GridCell
         {
             if (unitMovmentList == AllUnits[i].MovmentType)
             {
-                index = 0;
+                index = i;
                 return true;
             }
         }
-        Debug.Log("testa");
         index = -1;
         return false;
     }

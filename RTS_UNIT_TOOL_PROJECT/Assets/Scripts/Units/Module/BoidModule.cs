@@ -1,16 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class BoidModule : UnitModule
 {
-    public int[] _indicesResults = new int[4]
-    {
-        -1, -1, -1,-1
-    };
+    private int indexCohesion = -1;
+    private List<List<UnitScript>> _unitsBoid = new List<List<UnitScript>>();
 
+    [HideInInspector]
+    public Vector3 OldVelocity;
     // déplace le comportement de destination sur le boid module
     // faire en sorte qu'il ne puisse déclencher cette etat que quand il essaye d'atteindre une destination
     // check si l'unité à un boid module
@@ -25,7 +24,7 @@ public class BoidModule : UnitModule
     // end destination
     void OnDrawGizmosSelected()
     {
-        if(Unit.SO == null)
+        if (Unit.SO == null)
             return;
         Gizmos.color = Color.magenta;
         Gizmos.DrawWireSphere(transform.position, Unit.SO.AllDistanceCellsClass[0].Base);
@@ -34,9 +33,8 @@ public class BoidModule : UnitModule
         Gizmos.color = Color.red + Color.yellow;
         Gizmos.DrawWireSphere(transform.position, Unit.SO.AllDistanceCellsClass[2].Base);
         Gizmos.color = Color.blue;
-        Gizmos.DrawWireSphere(transform.position, Unit.SO.AllDistanceCellsClass[3].Base);
+        Gizmos.DrawWireSphere(transform.position, Unit.SO.DistanceToDestinationPoint);
     }
-
 
 
     public override void OnStart()
@@ -45,15 +43,13 @@ public class BoidModule : UnitModule
 
     public override void AskUpdate()
     {
+        _unitsBoid.Clear();
         if (Unit.IsMove && !Unit.IsEngage)
         {
-            for (int i = 0; i < 3; i++)
-            {
-                Unit.DistanceUnitsResults.AskDistanceUnit(Unit, Unit.SO.AllDistanceCellsClass[i].DistanceJob, Unit.SO.MovmentTypeList,
-                    out _indicesResults[i]);
+            Unit.DistanceUnitsResults.AskDistanceUnitsWithAmount(Unit, Unit.SO.AllDistanceCellsClass[0].DistanceJob,
+                Unit.SO.MovmentTypeList,
+                out indexCohesion);
 //                Debug.Log(_indicesResults[i]);
-           
-            }
         }
     }
 
@@ -61,85 +57,91 @@ public class BoidModule : UnitModule
     {
         if (Unit.IsMove)
         {
-            SendDataBoidJobs();
-                   CheckDestinationUnit();
-                
+            if (!Unit.IsEngage)
+            {
+                SendDataBoidJobs();
+
+                if (!Unit.DestinationIsUnit)
+                {
+                    CheckDestinationPoint();
+                }
+            }
         }
-       
     }
 
 
     void SendDataBoidJobs()
     {
-        List<List<Transform>> _unitsTransform = new List<List<Transform>>();
-        for (int i = 0; i < 3; i++)
+        _unitsBoid = new List<List<UnitScript>>()
         {
-       
-///            Debug.Log(Unit.Results.UnitsResults[_indicesResults[i]].Units.Count);
-            List<Transform> _currentUnitsTransform = new List<Transform>();
-            for (int j = 0; j < Unit.DistanceUnitsResults.UnitsResults[_indicesResults[i]].Units.Count; j++)
+            new List<UnitScript>(), new List<UnitScript>(), new List<UnitScript>()
+        };
+        for (int j = 0; j < Unit.DistanceUnitsResults.UnitsResultAmounts[indexCohesion].UnitsWithAmount.Count; j++)
+        {
+            if (Unit.DistanceUnitsResults.UnitsResultAmounts[indexCohesion].UnitsWithAmount[j].Unit.Squad ==
+                Unit.Squad &&
+                !Unit.DistanceUnitsResults.UnitsResultAmounts[indexCohesion].UnitsWithAmount[j].Unit.IsDead)
             {
-             //Debug.Log(i+" cellid"+Unit.Cell.ID +"     "+ Unit.Results.UnitsResults[_indicesResults[i]].Units[j].Cell.ID);
-
-//          Debug.Log( i+ ""+Unit.Cell.ID+"     "+ Unit.Results.UnitsResults[_indicesResults[i]].Units[j].Cell.ID+"     "+  Vector3.Distance(Unit.Results.UnitsResults[_indicesResults[i]].Units[j].transform.position, transform.position));
-               if(Unit.DistanceUnitsResults.UnitsResults[_indicesResults[i]].Units[j].Squad == Unit.Squad && !Unit.DistanceUnitsResults.UnitsResults[_indicesResults[i]].Units[j].IsDead)
-                _currentUnitsTransform.Add(Unit.DistanceUnitsResults.UnitsResults[_indicesResults[i]].Units[j].transform);
+                for (int i = 0; i < 3; i++)
+                {
+                    if (Unit.DistanceUnitsResults.UnitsResultAmounts[indexCohesion].UnitsWithAmount[j].SquareDistance <=
+                        Unit.SO.AllDistanceCellsClass[i].DistanceJob.Square)
+                    {
+                        _unitsBoid[i].Add(Unit.DistanceUnitsResults.UnitsResultAmounts[indexCohesion].UnitsWithAmount[j]
+                            .Unit);
+                    }
+                }
             }
-
-            _unitsTransform.Add(_currentUnitsTransform);
         }
-
         UnitsBoidJobsData.UnitsBoidJobsClass _unitsBoidJobsClass = new UnitsBoidJobsData.UnitsBoidJobsClass()
         {
-            Speeds = Unit.SO.AllSpeeds, Unit = Unit, UnitsTransform = _unitsTransform
+            Speeds = Unit.SO.AllSpeeds, Unit = Unit, Units = _unitsBoid, OldVelocity = OldVelocity,
+            SmoothFactor = Unit.SO.BoidSmoothFactor
         };
         UnitsBoidJobsManager.Instance.BoidsData.Add(_unitsBoidJobsClass);
     }
 
-    void EndDestinationPoint()
+    public void EndDestinationPoint()
     {
+        Unit.Agent.speed = 0;
+        Unit.Agent.angularSpeed = 0;
         Unit.DestinationIsPoint = false;
-        Unit.Squad.Destinations[Unit.DestinationIndex].FirstUnitReachedDestination = true;
+        Unit.Squad.DestinationsPoint[Unit.DestinationPointIndex].FirstUnitReachedDestination = true;
+
         Unit.IsMove = false;
         Unit.Agent.SetDestination(transform.position);
-        Unit.Squad.EndDestinationPoint();
     }
 
-    void CheckDestinationUnit()
+    void CheckDestinationPoint()
     {
-        List<UnitScript> _endDestinationUnits = new List<UnitScript>();
-        _endDestinationUnits.AddRange(Unit.DistanceUnitsResults.UnitsResults[_indicesResults[2]].Units);
-
         if (Unit.DestinationIsPoint)
         {
-            if (!Unit.Squad.Destinations[Unit.DestinationIndex].FirstUnitReachedDestination)
+            List<UnitScript> _endDestinationUnits = new List<UnitScript>();
+            //Debug.Log("coehsion"+Unit.DistanceUnitsResults.UnitsResults[_indicesResults[0]].Units.Count);
+            //  Debug.Log("alignement"+Unit.DistanceUnitsResults.UnitsResults[_indicesResults[1]].Units.Count);
+            //   Debug.Log("avoidance"+Unit.DistanceUnitsResults.UnitsResults[_indicesResults[2]].Units.Count);
+            _endDestinationUnits.AddRange(_unitsBoid[2]);
+            if (!Unit.Squad.DestinationsPoint[Unit.DestinationPointIndex].FirstUnitReachedDestination)
             {
-            
-                if (!Unit.Agent.pathPending && Unit.Agent.remainingDistance <= Unit.SO.AllDistanceCellsClass[2].Base)
+                if (!Unit.Agent.pathPending && Unit.Agent.remainingDistance <= Unit.SO.DistanceToDestinationPoint)
                 {
                     EndDestinationPoint();
-                    Unit.Squad.Destinations[Unit.DestinationIndex].FirstUnitReachedDestination = true; 
+                    Unit.Squad.DestinationsPoint[Unit.DestinationPointIndex].FirstUnitReachedDestination = true;
                 }
             }
             else
             {
-               Debug.Log(_endDestinationUnits.Count); 
                 for (int i = 0; i < _endDestinationUnits.Count; i++)
                 {
-          
                     if (_endDestinationUnits[i].Squad == Unit.Squad)
                     {
                         if (!_endDestinationUnits[i].DestinationIsPoint)
                         {
-                            Debug.Log(Unit.Cell.ID+"bonjour");
                             EndDestinationPoint();
                         }
                     }
                 }
             }
         }
-    
     }
-
-  
 }

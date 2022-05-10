@@ -18,7 +18,7 @@ public class SquadManagerEditor : Editor
         if(GUILayout.Button("Save Unit Type"))
         {
             if(_squadManager.AllTypesUnit.Count != 0)
-            EnumCreator.WritePlayerType(_squadManager.AllTypesUnit);
+            EnumCreator.WriteUnitType(_squadManager.AllTypesUnit);
             
         }
     }

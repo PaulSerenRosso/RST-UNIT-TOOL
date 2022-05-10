@@ -6,39 +6,50 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Networking;
+using UnityEngine.Serialization;
 
 public class UnitScript : MonoBehaviour
 {
-    [SerializeField] public UnitSO SO;
+    public UnitSO SO;
+    [HideInInspector]
     public GridCell Cell;
+    [HideInInspector]
     public Squad Squad;
-    public FightModule Fight;
-
+    [HideInInspector]
+    public float HealthPercentage;
     
-    public UnitScript TargetUnit;
-    public NavMeshAgent Agent;
-    public int MovementCellIndexList;
-    public DistanceUnitsJobResults DistanceUnitsResults;
-    public bool IsMove;
+ public FightModule Fight;
+ public NavMeshAgent Agent;
+ public DistanceUnitsJobResults DistanceUnitsResults;
     public BoidModule Boid;
-    public int DestinationIndex;
-    
+ [HideInInspector]
+    public int MovementCellIndexList;
+[HideInInspector]
+    public bool IsMove;
+    [HideInInspector]
+    public int DestinationPointIndex;
+    [HideInInspector]
+    public int DestinationUnitIndex;
 
-    
+    [HideInInspector]
     public bool IsDead;
+    [HideInInspector]
     public float Health;
-    public bool  IsEngage;
-
+    [HideInInspector]
+    public bool IsEngage;
+    [HideInInspector]
     public bool
         ReachedPoint;
-
+    [HideInInspector]
     public bool DestinationIsPoint;
+    
+    [HideInInspector]
     public bool DestinationIsUnit;
 
 
     private void OnValidate()
     {
-        if (DistanceUnitsResults== null)
+        if (DistanceUnitsResults == null)
             TryGetComponent(out DistanceUnitsResults);
     }
 
@@ -46,6 +57,7 @@ public class UnitScript : MonoBehaviour
     private void Start()
     {
         Health = SO.MaxHealth;
+        HealthPercentage = 100;
         switch (SO.MovmentType)
         {
             case UnitMovmentType.Aerial:
@@ -62,6 +74,7 @@ public class UnitScript : MonoBehaviour
             {
                 Agent.areaMask = MapManager.Instance.AllTerrains[2].NavArea;
                 break;
+                
             }
         }
     }
@@ -93,6 +106,7 @@ public class UnitScript : MonoBehaviour
 
             Cell.AllUnits[index].Units.Add(this);
             MovementCellIndexList = index;
+            GridManager.Instance.Grid[idCell] = Cell;
         }
         else
         {
@@ -110,31 +124,19 @@ public class UnitScript : MonoBehaviour
     public void AskUpdate()
     {
         Boid.AskUpdate();
+    
         Fight.AskUpdate();
-      
+
         if (!IsMove) return;
-        for (int i = 0; i < 3; i++)
-        {
-            Debug.Log(Boid.Unit.DistanceUnitsResults.UnitsResults[Boid._indicesResults[i]].Units.Count);
-        }
+    
     }
 
     public void OnUpdate()
     {
         //  Debug.Log(index +"" + Results.UnitsResults[index].Count);
 
-        for (int i = 0; i < 3; i++)
-        {
-            if (!IsMove) continue;
-
-            for (int j = 0; j < Boid.Unit.DistanceUnitsResults.UnitsResults[Boid._indicesResults[i]].Units.Count; j++)
-            {
-//              Debug.Log(j+"   "+Boid.Unit.Results.UnitsResults[Boid._indicesResults[i]].Units.Count+ "     " +Cell.ID +"     "+ Boid.Unit.Results.UnitsResults[Boid._indicesResults[i]].Units[j].Cell.ID+"  "+ Boid.Unit.Results.UnitsResults[Boid._indicesResults[i]].Units[j].MovmentType);
-            }
-        }
-        
-
         Boid.OnUpdate();
+
         Fight.OnUpdate();
 
 
@@ -143,14 +145,16 @@ public class UnitScript : MonoBehaviour
         DistanceUnitsResults.CheckDistanceUnitResults.Clear();
     }
 
-    public void TakeDamage(float amount, UnitScript unit)
+    public void TakeDamage(float amount)
     {
+        if (IsDead)
+            return;
         Health -= amount;
+        HealthPercentage = Health / SO.MaxHealth * 100;
         if (Health <= 0)
         {
             IsDead = true;
             SquadManager.Instance.DeadUnits.Add(this);
-            
         }
     }
 }

@@ -13,9 +13,10 @@ public class DistanceCellsClass
     public void ConvertDistanceToDistanceCell(GridManager gridManager)
     {
         DistanceJob.Square = Base * Base;
-        DistanceJob.LinesCell = new int3(Mathf.RoundToInt(Base / gridManager.SizeCells.x) ,
-            Mathf.RoundToInt(Base / gridManager.SizeCells.y) ,
-            Mathf.RoundToInt(Base / gridManager.SizeCells.z) );
+        DistanceJob.LinesCell = new int3(Mathf.Max(Mathf.RoundToInt(Base / gridManager.SizeCells.x),1) ,Mathf.Max(Mathf.RoundToInt(Base / gridManager.SizeCells.y),1)
+             ,Mathf.Max(Mathf.RoundToInt(Base / gridManager.SizeCells.z),1)
+             );
+      
         DistanceJob.Area = (1+2*DistanceJob.LinesCell.x) * (1+2*DistanceJob.LinesCell.y) * (1+2*DistanceJob.LinesCell.z);
 
     }

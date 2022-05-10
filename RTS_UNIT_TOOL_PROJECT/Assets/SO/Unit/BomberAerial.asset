@@ -1,0 +1,114 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a666604c334b4d41a1759e3f37ca580, type: 3}
+  m_Name: BomberAerial
+  m_EditorClassIdentifier: 
+  Type: 3
+  MaxHealth: 150
+  MovmentType: 0
+  DestinationPointSpeed: 7
+  DestinationPointRotationSpeed: 125
+  DestinationFightSpeed: 7
+  DestinationFightRotationSpeed: 300
+  MovmentTypeList: 00000000
+  BoidSmoothFactor: 0.005
+  MovmentTypesDetection: 0200000001000000
+  DistanceEngagement:
+    Base: 10.28
+    DistanceJob:
+      Square: 105.6784
+      LinesCell:
+        x: 1
+        y: 3
+        z: 1
+      Area: 63
+  IsEngageAutomatically: 0
+  MovmentTypeIndicesDetection: 0200000001000000
+  WithStopMovment: 1
+  DistanceStopMovment:
+    Base: 8.25
+    Square: 68.0625
+  ChangePriority: 0
+  TargetPriorities:
+  - Enum: 2
+    Value: 1
+  IsRandomDamage: 0
+  MinDamage: 20
+  MaxDamage: 50
+  BaseDamage: 200
+  CooldownAttack: 5
+  DistanceAttack:
+    Base: 9.53
+    Square: 90.82089
+  _cohesionParameter:
+    Distance:
+      Base: 13.79
+      DistanceJob:
+        Square: 190.1641
+        LinesCell:
+          x: 1
+          y: 4
+          z: 1
+        Area: 81
+    Speed: 5
+  _alignementParameter:
+    Distance:
+      Base: 9.68
+      DistanceJob:
+        Square: 93.70241
+        LinesCell:
+          x: 1
+          y: 3
+          z: 1
+        Area: 63
+    Speed: 1.38
+  _avoidanceParameter:
+    Distance:
+      Base: 5.12
+      DistanceJob:
+        Square: 26.2144
+        LinesCell:
+          x: 1
+          y: 2
+          z: 1
+        Area: 45
+    Speed: 20
+  AllDistanceCellsClass:
+  - Base: 13.79
+    DistanceJob:
+      Square: 190.1641
+      LinesCell:
+        x: 1
+        y: 4
+        z: 1
+      Area: 81
+  - Base: 9.68
+    DistanceJob:
+      Square: 93.70241
+      LinesCell:
+        x: 1
+        y: 3
+        z: 1
+      Area: 63
+  - Base: 5.12
+    DistanceJob:
+      Square: 26.2144
+      LinesCell:
+        x: 1
+        y: 2
+        z: 1
+      Area: 45
+  DistanceToDestinationPoint: 7.5
+  AllSpeeds:
+  - 5
+  - 1.38
+  - 20

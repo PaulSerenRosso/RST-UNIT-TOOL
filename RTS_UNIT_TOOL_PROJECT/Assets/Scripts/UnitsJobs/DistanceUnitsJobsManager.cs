@@ -2,11 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using UnityEngine.Profiling;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
-using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.Jobs;
 using UnityEngine.Rendering;
@@ -19,7 +19,6 @@ public class DistanceUnitsJobsManager : MonoBehaviour
     private GridManager _gridManager;
 
     public List<GetAllUnitsAtDistanceData.DataClass> GetUnitsData;
-    List<UnitScript> _unitsMovment = new List<UnitScript>();
     [SerializeField] private int _jobSizeNeighbours;
     [SerializeField] private int _jobSizeDistance;
 
@@ -28,7 +27,9 @@ public class DistanceUnitsJobsManager : MonoBehaviour
 
     #region CheckDistanceUnit
 
-    [Header(" CheckDistanceUnit")] public List<CheckDistanceUnitData.DataClass> CheckUnitData;
+    [Header(" CheckDistanceUnit")]
+    public List<CheckDistanceUnitData.DataClass> CheckUnitData = new List<CheckDistanceUnitData.DataClass>();
+
     [SerializeField] private int _jobSizeCheckNeighbours;
     [SerializeField] private int _jobSizeCheckDistance;
 
@@ -49,30 +50,86 @@ public class DistanceUnitsJobsManager : MonoBehaviour
     {
     }
 
+    void SetNeighboursCellCheckJob(out NativeArray<GetAllUnitsAtDistanceData.NeighbourCells> neighboursCellDatas,
+        out NativeArray<int> cellIDMinCounts, out int neighboursCellIDCount)
+    {
+        neighboursCellDatas =
+            new NativeArray<GetAllUnitsAtDistanceData.NeighbourCells>(CheckUnitData.Count, Allocator.TempJob);
+        cellIDMinCounts = new NativeArray<int>(CheckUnitData.Count, Allocator.TempJob);
+        for (int i = 0; i < CheckUnitData.Count; i++)
+        {
+            neighboursCellDatas[i] = new GetAllUnitsAtDistanceData.NeighbourCells(
+                CheckUnitData[i].DistanceCheck.LinesCell,
+                CheckUnitData[i].Unit.Cell.ID, CheckUnitData[i].Unit.Cell.LinesPosition);
+        }
+
+        neighboursCellIDCount = 0;
+
+        for (int i = 0; i < CheckUnitData.Count; i++)
+        {
+            cellIDMinCounts[i] = neighboursCellIDCount;
+            neighboursCellIDCount += CheckUnitData[i].DistanceCheck.Area;
+        }
+    }
+
+    void SetCheckUnitAtDistanceJob(GetNeighboursCellJob getNeighboursCellJob,
+        out NativeArray<CheckDistanceUnitData.UnitsAtDistance> unitAtDistanceDatas)
+    {
+        List<CheckDistanceUnitData.UnitsAtDistance> _unitAtDistanceDatasList =
+            new List<CheckDistanceUnitData.UnitsAtDistance>();
+
+        int count = 0;
+        for (int i = 0; i < getNeighboursCellJob.NeighbourCellsID.Length; i++)
+        {
+            if (count != getNeighboursCellJob.CellIDMinCounts.Length - 1)
+            {
+                if (getNeighboursCellJob.CellIDMinCounts[count + 1] == i)
+                {
+                    count++;
+                }
+            }
+
+
+            if (getNeighboursCellJob.NeighbourCellsID[i] == CheckUnitData[count].CheckUnit.Cell.ID)
+            {
+                _unitAtDistanceDatasList.Add(new CheckDistanceUnitData.UnitsAtDistance(
+                    CheckUnitData[count].DistanceCheck.Square, CheckUnitData[count].Unit.transform
+                        .position, CheckUnitData[count].CheckUnit.transform.position));
+                CheckUnitData[count].InNeighbourCells = true;
+
+                if (count != getNeighboursCellJob.CellIDMinCounts.Length - 1)
+                    i = getNeighboursCellJob.CellIDMinCounts[count + 1] - 1;
+            }
+        }
+
+        for (int i = CheckUnitData.Count - 1; i > -1; i--)
+        {
+            if (!CheckUnitData[i].InNeighbourCells)
+            {
+                CheckUnitData.Remove(CheckUnitData[i]);
+            }
+        }
+
+        unitAtDistanceDatas =
+            new NativeArray<CheckDistanceUnitData.UnitsAtDistance>(_unitAtDistanceDatasList.Count,
+                Allocator.TempJob);
+
+        for (int i = 0; i < _unitAtDistanceDatasList.Count; i++)
+        {
+            unitAtDistanceDatas[i] = _unitAtDistanceDatasList[i];
+        }
+    }
+
     public void CheckDistanceUnit()
     {
         if (CheckUnitData.Count == 0) return;
         JobHandle _handle = new JobHandle();
 
-        NativeArray<GetAllUnitsAtDistanceData.NeighbourCells> _neighboursCellDatas =
-            new NativeArray<GetAllUnitsAtDistanceData.NeighbourCells>(CheckUnitData.Count, Allocator.TempJob);
 
-        for (int i = 0; i < CheckUnitData.Count; i++)
-        {
-            _neighboursCellDatas[i] = new GetAllUnitsAtDistanceData.NeighbourCells(
-                GetUnitsData[i].DistanceCheck.LinesCell,
-                GetUnitsData[i].Unit.Cell.ID, GetUnitsData[i].Unit.Cell.LinesPosition);
-        }
+        SetNeighboursCellCheckJob(out NativeArray<GetAllUnitsAtDistanceData.NeighbourCells> _neighboursCellDatas,
+            out NativeArray<int> _cellIDMinCounts, out int _neighboursCellIDCount);
 
-        int neighboursCellIDCount = 0;
-        NativeArray<int> _cellIDMinCounts = new NativeArray<int>(CheckUnitData.Count, Allocator.TempJob);
-        for (int i = 0; i < CheckUnitData.Count; i++)
-        {
-            _cellIDMinCounts[i] = neighboursCellIDCount;
-            neighboursCellIDCount += GetUnitsData[i].DistanceCheck.Area;
-        }
-
-        NativeArray<int> _AllneighbourCellsID = new NativeArray<int>(neighboursCellIDCount, Allocator.TempJob);
+        NativeArray<int> _AllneighbourCellsID = new NativeArray<int>(_neighboursCellIDCount, Allocator.TempJob);
         GetNeighboursCellJob _getNeighboursCellJob = new GetNeighboursCellJob
         {
             AllDatas = _neighboursCellDatas,
@@ -84,48 +141,14 @@ public class DistanceUnitsJobsManager : MonoBehaviour
         _handle = _getNeighboursCellJob.Schedule(CheckUnitData.Count, _jobSizeCheckNeighbours);
         _handle.Complete();
 
-        List<CheckDistanceUnitData.UnitsAtDistance> _unitAtDistanceDatasList =
-            new List<CheckDistanceUnitData.UnitsAtDistance>();
-
-        int count = 0;
-        for (int i = 0; i < _getNeighboursCellJob.NeighbourCellsID.Length; i++)
-        {
-            if (_getNeighboursCellJob.CellIDMinCounts[count + 1] == i)
-            {
-                count++;
-            }
-
-            if (_getNeighboursCellJob.NeighbourCellsID[i] == CheckUnitData[count].CheckUnit.Cell.ID)
-            {
-                _unitAtDistanceDatasList.Add(new CheckDistanceUnitData.UnitsAtDistance(
-                    CheckUnitData[count].DistanceCheck.Square, CheckUnitData[count].Unit.transform
-                        .position, CheckUnitData[count].CheckUnit.transform.position));
-                CheckUnitData[count].InNeighbourCells = true;
-                i = _getNeighboursCellJob.CellIDMinCounts[count + 1] - 1;
-            }
-        }
-
-        for (int i = CheckUnitData.Count - 1; i > -1; i++)
-        {
-            if (!CheckUnitData[count].InNeighbourCells)
-            {
-                CheckUnitData.Remove(CheckUnitData[i]);
-            }
-        }
-
-        NativeArray<CheckDistanceUnitData.UnitsAtDistance> _unitAtDistanceDatas =
-            new NativeArray<CheckDistanceUnitData.UnitsAtDistance>(_unitAtDistanceDatasList.Count, Allocator.TempJob);
-
-        for (int i = 0; i < _unitAtDistanceDatasList.Count; i++)
-        {
-            _unitAtDistanceDatas[i] = _unitAtDistanceDatasList[i];
-        }
+        SetCheckUnitAtDistanceJob(_getNeighboursCellJob,
+            out NativeArray<CheckDistanceUnitData.UnitsAtDistance> _unitAtDistanceDatas);
 
         CheckUnitAtDistanceJob _checkUnitAtDistanceJob = new CheckUnitAtDistanceJob()
         {
             AllDatas = _unitAtDistanceDatas
         };
-        _handle = _checkUnitAtDistanceJob.Schedule(_unitAtDistanceDatasList.Count, _jobSizeCheckDistance);
+        _handle = _checkUnitAtDistanceJob.Schedule(_unitAtDistanceDatas.Length, _jobSizeCheckDistance);
         _handle.Complete();
 
         for (int i = 0; i < CheckUnitData.Count; i++)
@@ -133,9 +156,13 @@ public class DistanceUnitsJobsManager : MonoBehaviour
             DistanceUnitsJobResults.CheckUnitAtDistanceClass checkUnitAtDistanceClass = CheckUnitData[i].Unit
                 .DistanceUnitsResults.CheckDistanceUnitResults[CheckUnitData[i].Index];
             checkUnitAtDistanceClass.InDistance = _checkUnitAtDistanceJob.AllDatas[i].InDistance;
-            checkUnitAtDistanceClass.SquareDistance = _checkUnitAtDistanceJob.AllDatas[i].SquareDistance;
+            checkUnitAtDistanceClass.SquareDistance = _checkUnitAtDistanceJob.AllDatas[i].SquareDistanceCheckUnit;
+            CheckUnitData[i].Unit
+                .DistanceUnitsResults.CheckDistanceUnitResults[CheckUnitData[i].Index] = checkUnitAtDistanceClass;
         }
 
+        _cellIDMinCounts.Dispose();
+        _neighboursCellDatas.Dispose();
         _unitAtDistanceDatas.Dispose();
         _AllneighbourCellsID.Dispose();
         CheckUnitData.Clear();
@@ -146,7 +173,6 @@ public class DistanceUnitsJobsManager : MonoBehaviour
     {
         if (GetUnitsData.Count == 0) return;
         JobHandle _handle = new JobHandle();
-        _unitsMovment.Clear();
 
         SetNeighboursCellJob(out NativeArray<GetAllUnitsAtDistanceData.NeighbourCells> _neighboursCellDatas);
         int neighboursCellIDCount = 0;
@@ -169,7 +195,7 @@ public class DistanceUnitsJobsManager : MonoBehaviour
         _handle = _getNeighboursCellJob.Schedule(GetUnitsData.Count, _jobSizeNeighbours);
         _handle.Complete();
 
-        _gridManager.Grid[GetUnitsData[0].Unit.Cell.ID].Color = Color.yellow;
+    
         GetNeighboursCells(_getNeighboursCellJob, out List<List<int>> _finalNeighbourCellsID);
 
         _neighboursCellDatas.Dispose();
@@ -179,9 +205,10 @@ public class DistanceUnitsJobsManager : MonoBehaviour
         NativeArray<MinMaxIndex> _minMaxCountUnits;
         NativeArray<float3> _unitsPosition;
         NativeArray<GetAllUnitsAtDistanceData.UnitsAtDistance> _unitsAtDistanceDatas;
-        List<GetAllUnitsAtDistanceData.Base> _unitsAtDistanceBaseDatas;
+        List<UnitScript> _unitsMovment;
+
         GetUnitsWithMovmentType(_finalNeighbourCellsID, out _unitsMovment, out _unitsPosition, out _minMaxCountUnits,
-            out _unitsAtDistanceDatas, out _unitsAtDistanceBaseDatas);
+            out _unitsAtDistanceDatas);
         NativeArray<CheckUnitAtDistance> _inDistanceArray =
             new NativeArray<CheckUnitAtDistance>(_unitsPosition.Length, Allocator.TempJob);
 
@@ -192,59 +219,61 @@ public class DistanceUnitsJobsManager : MonoBehaviour
             InDistanceArray = _inDistanceArray,
             MinMaxIndexArray = _minMaxCountUnits,
         };
-        _handle = _getUnitsAtDistanceJob.Schedule(_unitsAtDistanceDatas.Length, _jobSizeDistance);
+        _handle = _getUnitsAtDistanceJob.Schedule(GetUnitsData.Count, _jobSizeDistance);
         _handle.Complete();
 
 
-        GetUnitsAtDistance(_unitsAtDistanceBaseDatas, _inDistanceArray, _minMaxCountUnits);
+        GetUnitsAtDistance(_unitsMovment, _inDistanceArray, _minMaxCountUnits);
         _unitsAtDistanceDatas.Dispose();
         _minMaxCountUnits.Dispose();
         _inDistanceArray.Dispose();
         _unitsPosition.Dispose();
+
         GetUnitsData.Clear();
     }
-    
-    void GetUnitsAtDistance(List<GetAllUnitsAtDistanceData.Base> baseDatas,
+
+    void GetUnitsAtDistance(List<UnitScript> unitsMovment,
         NativeArray<CheckUnitAtDistance> inDistanceArray, NativeArray<MinMaxIndex> minMaxIndices)
     {
         int maxCount = 0;
 
         for (int i = 0; i < inDistanceArray.Length; i++)
         {
-            if (minMaxIndices[maxCount].MaxIndex == i)
+            if (minMaxIndices[maxCount].MaxIndex == i && i != 0)
             {
                 maxCount++;
             }
+
+            if (minMaxIndices[maxCount].MaxIndex == 0)
+            {
+                while (minMaxIndices[maxCount].MaxIndex == 0)
+                {
+                    maxCount++;
+                }
+            }
+
             if (inDistanceArray[i].InDistance)
             {
-                if (baseDatas[maxCount].WithSquareDistance)
+                if (GetUnitsData[maxCount].WithSquareDistance)
                 {
                     UnitWithDistanceAmount unitWithDistanceAmount =
-                        new UnitWithDistanceAmount(_unitsMovment[i], inDistanceArray[i].SquareDistance);
-                    baseDatas[maxCount].Unit.DistanceUnitsResults.UnitsResultAmounts[baseDatas[maxCount].Index]
+                        new UnitWithDistanceAmount(unitsMovment[i], inDistanceArray[i].SquareDistance);
+                    GetUnitsData[maxCount].Unit.DistanceUnitsResults.UnitsResultAmounts[GetUnitsData[maxCount].Index]
                         .UnitsWithAmount.Add(unitWithDistanceAmount);
                 }
                 else
                 {
-                    baseDatas[maxCount].Unit.DistanceUnitsResults.UnitsResults[baseDatas[maxCount].Index].Units
-                        .Add(_unitsMovment[i]);
+                    GetUnitsData[maxCount].Unit.DistanceUnitsResults.UnitsResults[GetUnitsData[maxCount].Index].Units
+                        .Add(unitsMovment[i]);
                 }
-
-                ;
             }
-        }
-
-        for (int i = 0; i < GetUnitsData.Count; i++)
-        {
-            GetUnitsData[i].Unit.DistanceUnitsResults.UnitsResults[GetUnitsData[i].Index].IsResult = true;
         }
     }
 
     void GetNeighboursCells(GetNeighboursCellJob getNeighboursCellJob, out List<List<int>> finalNeighbourCellsID)
     {
         finalNeighbourCellsID = new List<List<int>>();
-
-
+        
         int w = -1;
         int j = 0;
         for (int i = 0; i < getNeighboursCellJob.NeighbourCellsID.Length; i++)
@@ -258,8 +287,9 @@ public class DistanceUnitsJobsManager : MonoBehaviour
                     finalNeighbourCellsID.Add(new List<int>());
                 }
             }
-
+            
             finalNeighbourCellsID[w].Add(getNeighboursCellJob.NeighbourCellsID[i]);
+
         }
     }
 
@@ -270,81 +300,106 @@ public class DistanceUnitsJobsManager : MonoBehaviour
     private void GetUnitsWithMovmentType(List<List<int>> NeighbourCellsID,
         out List<UnitScript> unitsMovment, out NativeArray<float3> unitsPosition,
         out NativeArray<MinMaxIndex> minCountUnits,
-        out NativeArray<GetAllUnitsAtDistanceData.UnitsAtDistance> unitsAtDistanceDatas,
-        out List<GetAllUnitsAtDistanceData.Base> baseDatas)
+        out NativeArray<GetAllUnitsAtDistanceData.UnitsAtDistance> unitsAtDistanceDatas)
     {
-        List<MinMaxIndex> minMaxIndicesList = new List<MinMaxIndex>();
         unitsMovment = new List<UnitScript>();
-        List<float3> unitsPositionList = new List<float3>();
-        List<UnitScript> unitCellsAdd = new List<UnitScript>();
-        List<GetAllUnitsAtDistanceData.UnitsAtDistance> currentUnitsAtDistance =
-            new List<GetAllUnitsAtDistanceData.UnitsAtDistance>();
-        baseDatas = new List<GetAllUnitsAtDistanceData.Base>();
+
+        unitsAtDistanceDatas =
+            new NativeArray<GetAllUnitsAtDistanceData.UnitsAtDistance>(GetUnitsData.Count, Allocator.TempJob);
+
+        minCountUnits = new NativeArray<MinMaxIndex>(GetUnitsData.Count, Allocator.TempJob);
+
+
         for (int i = 0; i < GetUnitsData.Count; i++)
         {
             MinMaxIndex _currentMinMaxIndex = new MinMaxIndex();
 
-            _currentMinMaxIndex.MinIndex = unitsPositionList.Count;
+            _currentMinMaxIndex.MinIndex = unitsMovment.Count;
 
+            bool _containTypeBaseUnit =
+                GetUnitsData[i].TypeMovmentUnit.Contains((int) GetUnitsData[i].Unit.SO.MovmentType);
 
             for (int j = 0; j < GetUnitsData[i].TypeMovmentUnit.Count; j++)
             {
                 for (int k = 0; k < NeighbourCellsID[i].Count; k++)
                 {
-                    var _allUnits = _gridManager.Grid[NeighbourCellsID[i][k]].AllUnits;
+                  
+                    var _allUnits = new List<UnitMovmentList>();
+
+                    if (_containTypeBaseUnit)
+                    {
+                        if (GetUnitsData[i].TypeMovmentUnit[j] == (int) GetUnitsData[i].Unit.SO.MovmentType)
+                        {
+                            if (NeighbourCellsID[i][k] == GetUnitsData[i].Unit.Cell.ID)
+                            {
+                                _gridManager.Grid[NeighbourCellsID[i][k]]
+                                    .AllUnits[GetUnitsData[i].Unit.MovementCellIndexList].Units
+                                    .Remove(GetUnitsData[i].Unit);
+                                _allUnits.AddRange(_gridManager.Grid[NeighbourCellsID[i][k]].AllUnits);
+                                _gridManager.Grid[NeighbourCellsID[i][k]]
+                                    .AllUnits[GetUnitsData[i].Unit.MovementCellIndexList].Units
+                                    .Add(GetUnitsData[i].Unit);
+                            
+                            }
+                            else
+                            {
+                                _allUnits = _gridManager.Grid[NeighbourCellsID[i][k]].AllUnits;
+                                
+                            }
+                        }
+                        else
+                        {
+                            _allUnits = _gridManager.Grid[NeighbourCellsID[i][k]].AllUnits;
+                        }
+                    }
+                    else
+                    {
+                        _allUnits = _gridManager.Grid[NeighbourCellsID[i][k]].AllUnits;
+                    }
+
+
+                 
                     for (int l = 0;
                         l < _allUnits.Count;
                         l++)
                     {
                         if (GetUnitsData[i].TypeMovmentUnit[j] == (int) _allUnits[l].MovmentType)
                         {
-                            for (int m = 0; m < _allUnits[l].Units.Count; m++)
-                            {
-                                if (_allUnits[l].Units[m] == GetUnitsData[i].Unit ||
-                                    unitCellsAdd.Contains(_allUnits[l].Units[m]))
-                                    continue;
+                      
+                            unitsMovment.AddRange(_allUnits[l].Units);
 
-                                unitsMovment.Add(_allUnits[l].Units[m]);
-                                unitCellsAdd.Add(_allUnits[l].Units[m]);
-                                //       Debug.Log(GetUnitsData[i].Index + "   "+ GetUnitsData[i].Unit.Cell.ID +"   "+ _allUnits[l].Units[m].Cell.ID + "distance "+Vector3.Distance(GetUnitsData[i].Unit.transform.position,_allUnits[l].Units[m].transform.position ));
-                                unitsPositionList.Add(_allUnits[l].Units[m].transform.position);
-                            }
+                            break;
                         }
+                
                     }
-
-
-                    unitCellsAdd.Clear();
+              
                 }
+          
             }
+          
 
-            _currentMinMaxIndex.MaxIndex = unitsPositionList.Count;
-            if (_currentMinMaxIndex.MaxIndex != _currentMinMaxIndex.MinIndex)
+            _currentMinMaxIndex.MaxIndex = unitsMovment.Count;
+            if (_currentMinMaxIndex.MaxIndex > _currentMinMaxIndex.MinIndex)
             {
-                minMaxIndicesList.Add(_currentMinMaxIndex);
                 GetAllUnitsAtDistanceData.UnitsAtDistance unitsAtDistance =
                     new GetAllUnitsAtDistanceData.UnitsAtDistance(GetUnitsData[i].DistanceCheck.Square,
                         GetUnitsData[i].Unit.transform.position, GetUnitsData[i].WithSquareDistance);
-                currentUnitsAtDistance.Add(unitsAtDistance);
-                GetAllUnitsAtDistanceData.Base currentBase = new GetAllUnitsAtDistanceData.Base();
-                currentBase.Index = GetUnitsData[i].Index;
-                currentBase.Unit = GetUnitsData[i].Unit;
-                baseDatas.Add(currentBase);
+                unitsAtDistanceDatas[i] = unitsAtDistance;
+                minCountUnits[i] = _currentMinMaxIndex;
+            }
+            else
+            {
+                _currentMinMaxIndex.MaxIndex = 0;
+                _currentMinMaxIndex.MinIndex = 0;
             }
         }
 
-        unitsAtDistanceDatas =
-            new NativeArray<GetAllUnitsAtDistanceData.UnitsAtDistance>(currentUnitsAtDistance.Count, Allocator.TempJob);
-        minCountUnits = new NativeArray<MinMaxIndex>(currentUnitsAtDistance.Count, Allocator.TempJob);
-        for (int i = 0; i < currentUnitsAtDistance.Count; i++)
+ 
+    
+        unitsPosition = new NativeArray<float3>(unitsMovment.Count, Allocator.TempJob);
+        for (int i = 0; i < unitsMovment.Count; i++)
         {
-            unitsAtDistanceDatas[i] = currentUnitsAtDistance[i];
-            minCountUnits[i] = minMaxIndicesList[i];
-        }
-
-        unitsPosition = new NativeArray<float3>(unitsPositionList.Count, Allocator.TempJob);
-        for (int i = 0; i < unitsPositionList.Count; i++)
-        {
-            unitsPosition[i] = unitsPositionList[i];
+            unitsPosition[i] = unitsMovment[i].transform.position;
         }
     }
 
@@ -360,7 +415,6 @@ public class DistanceUnitsJobsManager : MonoBehaviour
                 GetUnitsData[i].Unit.Cell.ID, GetUnitsData[i].Unit.Cell.LinesPosition);
         }
     }
-
 
     [BurstCompile]
     public struct GetNeighboursCellJob : IJobParallelFor
@@ -380,22 +434,23 @@ public class DistanceUnitsJobsManager : MonoBehaviour
         {
             var _data = AllDatas[index];
 
-            int3 _minDistanceLines = _data.DistanceLinesCell;
-            int3 _maxDistanceLines = _data.DistanceLinesCell;
+            int3 _minDistanceLines =_data.DistanceLinesCell;
+            int3 _maxDistanceLines = _data.DistanceLinesCell;  
 
-            if ((_data.LinesPosition.x + _data.DistanceLinesCell.x) >= GridLinesCount.x)
-                _maxDistanceLines.x -= _data.LinesPosition.x + _data.DistanceLinesCell.x;
-            if ((_data.LinesPosition.y + _data.DistanceLinesCell.y) >= GridLinesCount.y)
-                _maxDistanceLines.y -= _data.LinesPosition.y + _data.DistanceLinesCell.y;
-            if ((_data.LinesPosition.z + _data.DistanceLinesCell.z) >= GridLinesCount.z)
-                _maxDistanceLines.z -= _data.LinesPosition.z + _data.DistanceLinesCell.z;
 
-            if ((_data.LinesPosition.x - _data.DistanceLinesCell.x) <= 0)
-                _minDistanceLines.x += _data.LinesPosition.x - _data.DistanceLinesCell.x;
-            if ((_data.LinesPosition.y - _data.DistanceLinesCell.y) <= 0)
-                _minDistanceLines.y += _data.LinesPosition.y - _data.DistanceLinesCell.y;
-            if ((_data.LinesPosition.z - _data.DistanceLinesCell.z) <= 0)
-                _minDistanceLines.z += _data.LinesPosition.z - _data.DistanceLinesCell.z;
+            if ((_data.LinesPosition.x + _data.DistanceLinesCell.x) > GridLinesCount.x)
+                _maxDistanceLines.x = GridLinesCount.x - _data.LinesPosition.x;
+            if ((_data.LinesPosition.y + _data.DistanceLinesCell.y) > GridLinesCount.y)
+                _maxDistanceLines.y = GridLinesCount.y - _data.LinesPosition.y;
+            if ((_data.LinesPosition.z + _data.DistanceLinesCell.z) > GridLinesCount.z)
+                _maxDistanceLines.z = GridLinesCount.z - _data.LinesPosition.z;
+
+            if ((_data.LinesPosition.x - _data.DistanceLinesCell.x) < 0)
+                _minDistanceLines.x = _data.LinesPosition.x ;
+            if ((_data.LinesPosition.y - _data.DistanceLinesCell.y) < 0)
+                _minDistanceLines.y = _data.LinesPosition.y ;
+            if ((_data.LinesPosition.z - _data.DistanceLinesCell.z) < 0)
+                _minDistanceLines.z = _data.LinesPosition.z;
 
 
             _maxDistanceLines *= GridFactors;
@@ -454,15 +509,14 @@ public class DistanceUnitsJobsManager : MonoBehaviour
         [ReadOnly] public NativeArray<GetAllUnitsAtDistanceData.UnitsAtDistance> AllDatas;
         [ReadOnly] public NativeArray<float3> UnitsPosition;
 
-        [NativeDisableParallelForRestriction] [WriteOnly]
-        public NativeArray<CheckUnitAtDistance> InDistanceArray;
+        [NativeDisableParallelForRestriction] public NativeArray<CheckUnitAtDistance> InDistanceArray;
 
         [ReadOnly] public NativeArray<MinMaxIndex> MinMaxIndexArray;
 
         public void Execute(int index)
         {
             var _data = AllDatas[index];
-
+            // print(MinMaxIndexArray[index].MaxIndex);
             for (int i = MinMaxIndexArray[index].MinIndex; i < MinMaxIndexArray[index].MaxIndex; i++)
             {
                 CheckUnitAtDistance checkUnit = InDistanceArray[i];
@@ -472,7 +526,6 @@ public class DistanceUnitsJobsManager : MonoBehaviour
                     checkUnit.InDistance = true;
                     if (_data.WithSquareDistance) checkUnit.SquareDistance = squareDistance;
                 }
-
                 InDistanceArray[i] = checkUnit;
             }
         }

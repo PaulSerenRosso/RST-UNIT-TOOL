@@ -10,14 +10,12 @@ public class MapManagerEditor : Editor
     private void OnEnable()
     {
         _mapManager =(MapManager) target;
-        if(_mapManager.UnderSkyMaterial != null)
-        _mapManager.UnderSkyMaterial.color = new Color(1, 1, 1, 0.25f);
+  
     }
 
     private void OnDisable()
     {
-        if(_mapManager.UnderSkyMaterial != null)
-        _mapManager.UnderSkyMaterial.color = new Color(0, 0, 0, 0);
+   
     }
 
     public override void OnInspectorGUI()
@@ -69,8 +67,6 @@ public class MapManagerEditor : Editor
 
             }
             EditorUtility.SetDirty(target);
-       NavMeshBuilder.BuildNavMesh();
-
 
             // suppre les data
             // que j'en duplique 3 

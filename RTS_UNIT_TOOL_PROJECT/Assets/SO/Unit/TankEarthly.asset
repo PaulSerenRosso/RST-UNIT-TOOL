@@ -1,0 +1,114 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a666604c334b4d41a1759e3f37ca580, type: 3}
+  m_Name: TankEarthly
+  m_EditorClassIdentifier: 
+  Type: 2
+  MaxHealth: 1000
+  MovmentType: 1
+  DestinationPointSpeed: 3
+  DestinationPointRotationSpeed: 70
+  DestinationFightSpeed: 7
+  DestinationFightRotationSpeed: 300
+  MovmentTypeList: 01000000
+  BoidSmoothFactor: 0.005
+  MovmentTypesDetection: 01000000
+  DistanceEngagement:
+    Base: 23.8
+    DistanceJob:
+      Square: 566.43994
+      LinesCell:
+        x: 2
+        y: 7
+        z: 2
+      Area: 375
+  IsEngageAutomatically: 1
+  MovmentTypeIndicesDetection: 01000000
+  WithStopMovment: 1
+  DistanceStopMovment:
+    Base: 10.1
+    Square: 102.01001
+  ChangePriority: 0
+  TargetPriorities:
+  - Enum: 2
+    Value: 0
+  IsRandomDamage: 1
+  MinDamage: 50
+  MaxDamage: 100
+  BaseDamage: 0
+  CooldownAttack: 3
+  DistanceAttack:
+    Base: 14.88
+    Square: 221.4144
+  _cohesionParameter:
+    Distance:
+      Base: 14.73
+      DistanceJob:
+        Square: 216.97289
+        LinesCell:
+          x: 1
+          y: 5
+          z: 1
+        Area: 99
+    Speed: 5
+  _alignementParameter:
+    Distance:
+      Base: 14.04
+      DistanceJob:
+        Square: 197.1216
+        LinesCell:
+          x: 1
+          y: 4
+          z: 1
+        Area: 81
+    Speed: 1.38
+  _avoidanceParameter:
+    Distance:
+      Base: 7.13
+      DistanceJob:
+        Square: 50.836903
+        LinesCell:
+          x: 1
+          y: 2
+          z: 1
+        Area: 45
+    Speed: 20
+  AllDistanceCellsClass:
+  - Base: 14.73
+    DistanceJob:
+      Square: 216.97289
+      LinesCell:
+        x: 1
+        y: 5
+        z: 1
+      Area: 99
+  - Base: 14.04
+    DistanceJob:
+      Square: 197.1216
+      LinesCell:
+        x: 1
+        y: 4
+        z: 1
+      Area: 81
+  - Base: 7.13
+    DistanceJob:
+      Square: 50.836903
+      LinesCell:
+        x: 1
+        y: 2
+        z: 1
+      Area: 45
+  DistanceToDestinationPoint: 10.3
+  AllSpeeds:
+  - 5
+  - 1.38
+  - 20
