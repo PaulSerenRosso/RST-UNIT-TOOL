@@ -50,11 +50,12 @@ public class PlayerController : MonoBehaviour
         int moveHeight = 0;
         int moveWidth = 0;
 
+      
         if (Input.mousePosition.y >= Screen.height - _borderMoveThickness &&
             Input.mousePosition.y <= Screen.height) moveHeight = 1;
         else if (Input.mousePosition.y <= _borderMoveThickness && Input.mousePosition.y >= 0) moveHeight = -1;
         if (Input.mousePosition.x >= Screen.width - _borderMoveThickness &&
-            Input.mousePosition.y <= Screen.width) moveWidth = 1;
+            Input.mousePosition.x <= Screen.width) moveWidth = 1;
         else if (Input.mousePosition.x <= _borderMoveThickness && Input.mousePosition.x >= 0) moveWidth = -1;
         if (moveHeight == 0 && moveWidth == 0)
             return;

@@ -302,7 +302,6 @@ public class FightModule : UnitModule
 
     void Fight()
     {
-      //  Debug.Log("bonsoir à toi le ifht");
         if (!Unit.IsEngage)
         {
             Unit.IsEngage = true;
@@ -346,7 +345,7 @@ public class FightModule : UnitModule
           
             if (TargetUnit.SquareDistance <= Unit.SO.DistanceAttack.Square)
             {
-             //   Debug.Log("tesfdsdsqfdsqfdsqfdsqftaaaa");
+           
                 if (Unit.SO.IsRandomDamage)
                 {
                     
@@ -374,7 +373,6 @@ public class FightModule : UnitModule
                 return _newUnitTarget;
             }
         }
-      //  Debug.Log(units.Count);
         return GetCloserUnit(units);
     }
 

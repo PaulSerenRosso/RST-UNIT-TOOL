@@ -71,6 +71,7 @@ public class Squad : MonoBehaviour
             {
                 if (DestinationUnitList[i].Units.Count == 0)
                 {
+                  
                     DestinationUnitList.Remove(DestinationUnitList[i]);
                     continue;
                 }
@@ -87,6 +88,7 @@ public class Squad : MonoBehaviour
                         }
                         catch
                         {
+                        
                             DestinationUnitList[i].Units.Remove(DestinationUnitList[i].Units[k]);
 
                         }
@@ -161,6 +163,7 @@ public class Squad : MonoBehaviour
         {
             DestinationUnit destinationUnit = new DestinationUnit(new float3(0,0,0), movmentTypeUnitsIndex[i],
                 new List<UnitScript>());
+          
             DestinationUnitList.Add(destinationUnit);
         }
 
@@ -173,7 +176,7 @@ public class Squad : MonoBehaviour
                 AllUnits[i].Units[j].DestinationIsPoint = false;
                 for (int k = 0; k < movmentTypeUnitsIndex.Count; k++)
                 {
-                    if (movmentTypeUnitsIndex[i] == (int) AllUnits[i].MovmentType)
+                    if (movmentTypeUnitsIndex[k] == (int) AllUnits[i].MovmentType)
                     {
                     
                         AllUnits[i].Units[j].Agent.speed = AllUnits[i].Units[j].SO.DestinationPointSpeed;
@@ -204,7 +207,6 @@ public class Squad : MonoBehaviour
                     {
                         AllUnits[i].Units[j].Agent.SetDestination(destinationSquadList[k].Position);
                         AllUnits[i].Units[j].IsMove = true;
-//                        Debug.Log(AllUnits[i].Units[j].name);
                         AllUnits[i].Units[j].DestinationIsPoint = true;
                         AllUnits[i].Units[j].DestinationIsUnit = false;
                         AllUnits[i].Units[j].DestinationPointIndex = k;
@@ -217,21 +219,5 @@ public class Squad : MonoBehaviour
             }
         }
     }
-
-    public void CheckEndDestination()
-    {
-        
-    }
-    public void EndDestinationPoint()
-    {
-        
-            for (int j = 0; j < AllUnits.Count; j++)
-            {
-                for (int i = 0; i < AllUnits[i].Units.Count; i++)
-                {
-                    AllUnits[i].Units[j].Boid.EndDestinationPoint();
-                }
-            }
-        
-    }
+    
 }
